@@ -69,6 +69,53 @@ npm run gen:demo  # regenerate public/demo/sample-hands.txt from the simulator
 npm run build:solver  # rebuild the WebAssembly solver (needs Rust; output is committed)
 ```
 
+## Accounts & sync (computer ↔ phone)
+
+Without an account everything stays on the device. Signing in (email + password) syncs your
+raw hand histories and training progress through [Supabase](https://supabase.com); each device
+re-analyzes the hands locally, so reviews, leaks and the training deck match everywhere.
+
+Setup (one time):
+
+1. Create a Supabase project and run [`supabase/migrations/20261103000000_leakfinder_sync.sql`](supabase/migrations/20261103000000_leakfinder_sync.sql)
+   (SQL editor, or `supabase db push`). It creates `hands` and `training_progress` with
+   row-level security so each user can only read their own rows, plus `delete_my_account()`
+   for in-app account deletion (an App Store requirement).
+2. Give the app the project URL and **publishable** key — either commit them in `.env.production`
+   (`VITE_SUPABASE_URL=…`, `VITE_SUPABASE_PUBLISHABLE_KEY=…`; the publishable key is safe to ship)
+   or set the repository variables `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` for the workflows.
+   Anyone can also connect their own project on the Account page.
+3. In Supabase → Authentication → URL Configuration, set the Site URL to your site
+   (e.g. `https://slamduncaan747.github.io/PokerAnalysis/`) so confirmation and password-reset
+   emails link back to it.
+
+## iOS app
+
+The `ios/` folder is a [Capacitor](https://capacitorjs.com) project (Swift Package Manager, iOS 15+)
+that bundles the built site, so analysis and the GTO solver run offline on the phone. The
+`iOS build` workflow compiles it on a macOS runner on every push.
+
+To run it on your iPhone or ship it to TestFlight (needs a Mac with Xcode and an Apple developer account):
+
+```bash
+npm install
+```
+
+```bash
+npm run ios:sync
+```
+
+```bash
+npm run ios:open
+```
+
+In Xcode: select the **App** target → Signing & Capabilities → choose your Team (change the bundle
+id `io.github.slamduncaan747.leakfinder` if you like) → pick your iPhone and press Run. For
+TestFlight: Product → Archive → Distribute App. Re-run `npm run ios:sync` after web changes.
+
+No Mac? Open the website on the iPhone in Safari → Share → **Add to Home Screen** for an
+app-like, full-screen install.
+
 ## Deploy for free (GitHub Pages)
 
 1. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**.

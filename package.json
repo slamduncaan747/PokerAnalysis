@@ -11,9 +11,15 @@
     "test": "vitest run",
     "typecheck": "tsc -b",
     "gen:demo": "node --experimental-strip-types scripts/generate-demo.ts",
-    "build:solver": "./scripts/build-solver.sh"
+    "build:solver": "./scripts/build-solver.sh",
+    "ios:sync": "npm run build && cap sync ios",
+    "ios:open": "cap open ios"
   },
   "dependencies": {
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3",
+    "@capacitor/status-bar": "8.0.4",
+    "@supabase/supabase-js": "2.118.0",
     "fflate": "^0.8.2",
     "idb-keyval": "^6.3.0",
     "lucide-react": "^1.66.0",
@@ -25,6 +31,8 @@
     "zustand": "^5.0.16"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.3",
+    "@electric-sql/pglite": "^0.5.10",
     "@tailwindcss/vite": "^4.3.4",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",

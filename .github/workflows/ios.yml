@@ -1,0 +1,48 @@
+name: iOS build
+
+# Compiles the Capacitor iOS app for the simulator (unsigned) to prove the native project builds.
+# Signing, TestFlight and App Store uploads are done from Xcode with your Apple developer account.
+on:
+  push:
+    branches: [main, claude/confident-volta-9ayi4l]
+    paths: ['ios/**', 'src/**', 'public/**', 'capacitor.config.ts', 'package.json', 'package-lock.json', '.github/workflows/ios.yml']
+  pull_request:
+    paths: ['ios/**', 'capacitor.config.ts', 'package.json', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          # Optional cloud sync: set these repository variables (Settings → Secrets and variables → Actions → Variables).
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          VITE_PUBLIC_SITE_URL: https://slamduncaan747.github.io/PokerAnalysis/
+      - run: npx cap sync ios
+      - name: Build for iOS Simulator (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild -version
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build | tail -n 40
+      - name: Check the app bundle contains the web app and solver
+        run: |
+          APP=$(find build/Build/Products -name "App.app" -maxdepth 3 | head -1)
+          ls "$APP/public" | head
+          test -f "$APP/public/index.html"
+          ls "$APP/public/assets" | grep -q "leakfinder_solver_bg.*\.wasm"

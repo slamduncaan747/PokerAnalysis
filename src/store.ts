@@ -27,11 +27,19 @@ interface State {
   status: ImportStatus;
   progress: Progress;
   init: () => Promise<void>;
-  importFiles: (files: { name: string; text: string }[]) => Promise<void>;
+  importFiles: (files: { name: string; text: string }[], opts?: { fromCloud?: boolean }) => Promise<void>;
   loadDemo: () => Promise<void>;
   reset: () => Promise<void>;
-  setProgress: (p: Progress) => void;
+  setProgress: (p: Progress, opts?: { fromCloud?: boolean }) => void;
+  /** Cloud sync hooks (set by src/cloud when an account is configured). */
+  setHooks: (h: Partial<Hooks>) => void;
 }
+
+interface Hooks {
+  afterImport: () => void;
+  afterProgress: () => void;
+}
+const hooks: Hooks = { afterImport: () => {}, afterProgress: () => {} };
 
 let worker: Worker | null = null;
 function getWorker(): Worker {
@@ -102,9 +110,10 @@ export const useStore = create<State>((set, get) => {
         set({ ready: true });
       }
     },
-    importFiles: async (files) => {
-      set({ status: { phase: 'parsing', done: 0, total: 0 } });
+    importFiles: async (files, opts) => {
+      set({ status: { phase: 'parsing', done: 0, total: 0, message: opts?.fromCloud ? 'Loading hands from your account…' : undefined } });
       await runWorker({ type: 'analyze', files, known: [...get().hands.keys()] });
+      if (!opts?.fromCloud) hooks.afterImport();
     },
     loadDemo: async () => {
       set({ status: { phase: 'parsing', done: 0, total: 0, message: 'Loading demo hands…' } });
@@ -116,9 +125,11 @@ export const useStore = create<State>((set, get) => {
       await clearAll();
       set({ hands: new Map(), analyses: new Map(), ordered: [], summary: null, status: { phase: 'idle', done: 0, total: 0 } });
     },
-    setProgress: (p) => {
+    setProgress: (p, opts) => {
       saveProgress(p);
       set({ progress: p });
+      if (!opts?.fromCloud) hooks.afterProgress();
     },
+    setHooks: (h) => Object.assign(hooks, h),
   };
 });

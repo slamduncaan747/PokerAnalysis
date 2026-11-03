@@ -64,3 +64,11 @@ body {
 .kbd { font-family: var(--font-mono); font-size: .7rem; padding: 1px 5px; border: 1px solid var(--color-line); border-radius: 5px; background: var(--color-panel-2); color: var(--color-mute); }
 @keyframes pop { 0% { transform: scale(.9); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
 .pop { animation: pop .18s ease-out; }
+
+/* iPhone notch / home-indicator safe areas (iOS app and home-screen web app). */
+.safe-top { padding-top: max(0.75rem, env(safe-area-inset-top, 0px)); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+@media (max-width: 767px) {
+  main { padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px)) !important; }
+}
+body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }

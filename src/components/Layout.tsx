@@ -1,5 +1,6 @@
-import { Cpu, Crosshair, GraduationCap, LayoutDashboard, ListOrdered, Lock, Upload } from 'lucide-react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { Cloud, CloudOff, Cpu, Crosshair, GraduationCap, LayoutDashboard, ListOrdered, Lock, RefreshCw, Upload } from 'lucide-react';
+import { Link, NavLink, Outlet } from 'react-router-dom';
+import { useCloud } from '../cloud/state.ts';
 import { useStore } from '../store.ts';
 import { ProgressBar } from './ui.tsx';
 
@@ -40,6 +41,22 @@ function ImportStatusBar() {
   );
 }
 
+function AccountChip({ compact = false }: { compact?: boolean }) {
+  const { user, syncing, configured, error } = useCloud();
+  const Icon = syncing ? RefreshCw : user ? Cloud : CloudOff;
+  const label = user ? (syncing ? 'Syncing…' : error ? 'Sync error' : 'Synced') : configured ? 'Sign in to sync' : 'Account';
+  return (
+    <Link
+      to="/account"
+      aria-label="Account and sync"
+      className={`flex items-center gap-2 rounded-lg text-sm ${compact ? 'p-2' : 'px-3 py-2'} ${user ? (error ? 'text-loss' : 'text-accent') : 'text-mute'} hover:bg-panel-2 hover:text-ink`}
+    >
+      <Icon size={18} className={syncing ? 'animate-spin' : ''} />
+      {!compact && <span className="truncate">{user ? user.email : label}</span>}
+    </Link>
+  );
+}
+
 export default function Layout() {
   return (
     <div className="flex min-h-full">
@@ -60,11 +77,13 @@ export default function Layout() {
             {label}
           </NavLink>
         ))}
-        <div className="mt-auto rounded-lg border border-line bg-panel-2 p-3 text-[11px] leading-relaxed text-mute">
+        <div className="mt-auto flex flex-col gap-2">
+        <AccountChip />
+        <div className="rounded-lg border border-line bg-panel-2 p-3 text-[11px] leading-relaxed text-mute">
           <div className="mb-1 flex items-center gap-1.5 font-semibold text-ink">
-            <Lock size={12} /> 100% private
+            <Lock size={12} /> Private by default
           </div>
-          Hand histories are analyzed in your browser and never leave your device.
+          Hands are analyzed on your device. They only leave it if you sign in to sync them to your own account.
           <div className="mt-2 border-t border-line pt-2 text-dim">
             Free software (AGPL-3.0) ·{' '}
             <a className="underline hover:text-mute" href="https://github.com/slamduncaan747/PokerAnalysis" target="_blank" rel="noreferrer">
@@ -77,16 +96,18 @@ export default function Layout() {
             </a>
           </div>
         </div>
+        </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="md:hidden sticky top-0 z-40 flex items-center justify-between border-b border-line bg-panel/95 backdrop-blur px-4 py-3">
+        <header className="safe-top md:hidden sticky top-0 z-40 flex items-center justify-between border-b border-line bg-panel/95 backdrop-blur px-4 py-3">
           <Logo />
+          <AccountChip compact />
         </header>
         <ImportStatusBar />
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 pb-24 md:px-8 md:pb-10">
           <Outlet />
         </main>
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-6 border-t border-line bg-panel/95 backdrop-blur">
+        <nav className="safe-bottom md:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-6 border-t border-line bg-panel/95 backdrop-blur">
           {NAV.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[10px] ${isActive ? 'text-accent' : 'text-mute'}`}>
               <Icon size={18} />
