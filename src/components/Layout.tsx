@@ -1,4 +1,4 @@
-import { Cloud, CloudOff, Cpu, Crosshair, GraduationCap, LayoutDashboard, ListOrdered, Lock, RefreshCw, Upload } from 'lucide-react';
+import { ArrowLeftRight, Cloud, CloudOff, Cpu, Crosshair, GraduationCap, LayoutDashboard, ListOrdered, Lock, RefreshCw, Upload } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useCloud } from '../cloud/state.ts';
 import { useStore } from '../store.ts';
@@ -43,12 +43,12 @@ function ImportStatusBar() {
 
 function AccountChip({ compact = false }: { compact?: boolean }) {
   const { user, syncing, configured, error } = useCloud();
-  const Icon = syncing ? RefreshCw : user ? Cloud : CloudOff;
-  const label = user ? (syncing ? 'Syncing…' : error ? 'Sync error' : 'Synced') : configured ? 'Sign in to sync' : 'Account';
+  const Icon = syncing ? RefreshCw : user ? Cloud : configured ? CloudOff : ArrowLeftRight;
+  const label = user ? (syncing ? 'Syncing…' : error ? 'Sync error' : 'Synced') : configured ? 'Sign in to sync' : 'Sync & devices';
   return (
     <Link
       to="/account"
-      aria-label="Account and sync"
+      aria-label="Sync and devices"
       className={`flex items-center gap-2 rounded-lg text-sm ${compact ? 'p-2' : 'px-3 py-2'} ${user ? (error ? 'text-loss' : 'text-accent') : 'text-mute'} hover:bg-panel-2 hover:text-ink`}
     >
       <Icon size={18} className={syncing ? 'animate-spin' : ''} />

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leakfinder Privacy Policy</title>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<style>
+  :root { color-scheme: dark; --bg:#0d0f13; --panel:#151920; --ink:#e8eaef; --mute:#9aa4b5; --accent:#3ecf8e; --line:#272e3a; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px max(20px, env(safe-area-inset-left)) 64px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 4px; text-wrap: balance; }
+  h2 { font-size: 18px; margin: 32px 0 8px; }
+  p, li { color: var(--mute); }
+  strong { color: var(--ink); }
+  a { color: var(--accent); }
+  .meta { color: var(--mute); font-size: 14px; margin-bottom: 24px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Leakfinder Privacy Policy</h1>
+  <div class="meta">Effective November 3, 2026 · applies to the Leakfinder iOS app and website</div>
+
+  <div class="box">
+    <p><strong>Short version:</strong> your hand histories are stored and analyzed on your own device. Leakfinder has no ads, no analytics and no tracking. Data only leaves your device when you choose to sync it to another device or to your own account.</p>
+  </div>
+
+  <h2>Data stored on your device</h2>
+  <p>Hand history files you import, the analysis of those hands, and your training progress are kept in the app's local storage on your device (in the browser's storage on the website). Analysis, including the GTO solver, runs on the device. You can delete everything at any time from <em>Import → Clear data</em>, or by deleting the app.</p>
+
+  <h2>Syncing with your other device (pairing code)</h2>
+  <p>When you pair two devices with a code, they connect directly to each other over an encrypted WebRTC connection and exchange hands and training progress. To introduce the two devices, the app briefly contacts a signalling server (the public PeerJS server at 0.peerjs.com), which sees a temporary connection ID derived from the pairing code and your device's IP address. Public STUN servers (Google and Cloudflare) may also see your IP address while the connection is set up. None of these services receive your hand histories.</p>
+
+  <h2>Backup files</h2>
+  <p>A backup is a .zip file created on your device. It goes wherever you choose to send it (for example AirDrop, Files or email) and is not uploaded by Leakfinder.</p>
+
+  <h2>Cloud account (optional)</h2>
+  <p>If you create an account, Leakfinder stores your email address, your password (as a secure hash), the raw text of your hand histories and your training progress with Supabase, our hosting provider, in the United States. Row-level security ensures only your signed-in account can read your data. We do not sell or share it, and it is used only to sync your devices. You can delete your synced hands, or your whole account and all of its data, at any time under <em>Sync &amp; devices</em> in the app.</p>
+
+  <h2>What we don't do</h2>
+  <ul>
+    <li>No advertising, analytics or tracking SDKs, and no tracking across apps or websites.</li>
+    <li>No selling or sharing of personal data.</li>
+    <li>No access to your poker accounts. Leakfinder only reads the files you import.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>Leakfinder is a study tool for adult poker players and is not directed at children.</p>
+
+  <h2>Changes and contact</h2>
+  <p>If this policy changes, the new version will be posted on this page with a new effective date. Questions or requests: open an issue at <a href="https://github.com/slamduncaan747/PokerAnalysis/issues">github.com/slamduncaan747/PokerAnalysis/issues</a>.</p>
+</main>
+</body>
+</html>

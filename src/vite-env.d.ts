@@ -9,3 +9,5 @@ interface ImportMetaEnv {
   /** Public web address, used for email links sent from the native app. */
   readonly VITE_PUBLIC_SITE_URL?: string;
 }
+
+declare const __APP_VERSION__: string;

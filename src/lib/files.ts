@@ -5,7 +5,7 @@ import { unzipSync } from 'fflate';
  * CoinPoker's or PokerStars' exports) into decoded text files.
  */
 
-const TEXT_EXT = /\.(txt|log|hh|csv|xml)$/i;
+const TEXT_EXT = /\.(txt|log|hh|csv|xml|json)$/i;
 
 /** Decode bytes as UTF-8 or UTF-16 (with or without BOM), dropping any BOM. */
 export function decodeText(bytes: Uint8Array): string {

@@ -1,5 +1,6 @@
 import { Cloud, CloudOff, KeyRound, LogOut, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
+import { BackupCard, PairingCard } from '../components/Pairing.tsx';
 import { Pill, SectionTitle } from '../components/ui.tsx';
 import { getCloudConfig } from '../cloud/config.ts';
 import {
@@ -174,24 +175,57 @@ function CustomProject() {
   );
 }
 
+function About() {
+  const link = 'underline hover:text-ink';
+  return (
+    <div className="panel flex flex-col gap-1.5 p-4 text-xs text-mute">
+      <div className="font-semibold text-ink">Leakfinder {__APP_VERSION__}</div>
+      <div>
+        <a className={link} href="https://slamduncaan747.github.io/PokerAnalysis/privacy.html" target="_blank" rel="noreferrer">
+          Privacy policy
+        </a>{' '}
+        ·{' '}
+        <a className={link} href="https://slamduncaan747.github.io/PokerAnalysis/support.html" target="_blank" rel="noreferrer">
+          Support
+        </a>{' '}
+        ·{' '}
+        <a className={link} href="https://github.com/slamduncaan747/PokerAnalysis" target="_blank" rel="noreferrer">
+          Source code (AGPL-3.0)
+        </a>
+      </div>
+      <div>
+        GTO solver:{' '}
+        <a className={link} href="https://github.com/b-inary/postflop-solver" target="_blank" rel="noreferrer">
+          postflop-solver
+        </a>{' '}
+        by Wataru Inariba · hand evaluator: phe / PokerHandEvaluator.
+      </div>
+    </div>
+  );
+}
+
 export default function Account() {
   const cloud = useCloud();
   const localHands = useStore((s) => s.hands.size);
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-5">
       <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          {cloud.user ? <Cloud className="text-accent" /> : <CloudOff className="text-mute" />} Account &amp; sync
-        </h1>
+        <h1 className="text-2xl font-bold">Sync &amp; devices</h1>
         <p className="mt-1 text-sm text-mute">
-          Sign in on your computer and your phone to keep the same hands, reviews and training progress everywhere. Without an account everything stays on this
-          device only.
+          Move your hands, reviews and training progress between your computer and your phone. Everything is stored on each device; nothing is shared unless you
+          sync it.
         </p>
       </div>
 
+      <PairingCard />
+      <BackupCard />
+
+      <h2 className="mt-2 flex items-center gap-2 text-lg font-bold">
+        {cloud.user ? <Cloud size={20} className="text-accent" /> : <CloudOff size={20} className="text-mute" />} Cloud account
+      </h2>
       {!cloud.configured && (
         <div className="panel p-5 text-sm text-mute">
-          Cloud sync isn't connected in this build yet. Your hands are stored on this device.
+          Cloud accounts (automatic sync in the background) aren't switched on in this version yet. Use device sync or a backup file above meanwhile.
         </div>
       )}
 
@@ -257,6 +291,7 @@ export default function Account() {
 
       <Pill>Tip: on iPhone, open this site in Safari → Share → Add to Home Screen, or use the iOS app.</Pill>
       <CustomProject />
+      <About />
     </div>
   );
 }

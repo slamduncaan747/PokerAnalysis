@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leakfinder Support</title>
+<link rel="icon" type="image/svg+xml" href="./favicon.svg">
+<style>
+  :root { color-scheme: dark; --bg:#0d0f13; --panel:#151920; --ink:#e8eaef; --mute:#9aa4b5; --accent:#3ecf8e; --line:#272e3a; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px max(20px, env(safe-area-inset-left)) 64px; }
+  h1 { font-size: 28px; line-height: 1.2; margin: 0 0 16px; }
+  h2 { font-size: 18px; margin: 28px 0 6px; }
+  p, li { color: var(--mute); }
+  strong { color: var(--ink); }
+  a { color: var(--accent); }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Leakfinder Support</h1>
+  <div class="box">
+    <p>Need help or found a bug? Open an issue at <a href="https://github.com/slamduncaan747/PokerAnalysis/issues">github.com/slamduncaan747/PokerAnalysis/issues</a>. Include the poker site and, if a file won't import, a sample hand with player names removed.</p>
+  </div>
+
+  <h2>Importing hands</h2>
+  <p>Export hand histories from your poker client as .txt files (or a .zip of them) and open them in <strong>Import</strong>. Supported: PokerStars, GGPoker/Natural8, CoinPoker, ACR/Winning Poker Network, Winamax, Ignition/Bovada and most PokerStars-style formats. No-Limit Hold'em only; duplicates are skipped automatically.</p>
+
+  <h2>Getting hands from your computer to your iPhone</h2>
+  <ul>
+    <li><strong>Pairing code:</strong> open <em>Sync &amp; devices</em> on both devices. Tap <em>Show a code</em> on one and enter it on the other. Hands and training progress sync both ways, directly between the devices.</li>
+    <li><strong>Backup file:</strong> <em>Sync &amp; devices → Export backup</em>, AirDrop the .zip to your iPhone, then <em>Import a backup</em> in the app.</li>
+  </ul>
+
+  <h2>How decisions are graded</h2>
+  <p>Preflop decisions are compared with solver-style range charts. Postflop decisions are scored by estimating the expected value of every option against your opponent's likely range. For a deeper look at any heads-up flop, turn or river spot, tap <em>Solve this spot</em> to run a full GTO solver on your phone.</p>
+
+  <h2>Privacy</h2>
+  <p>See the <a href="./privacy.html">privacy policy</a>. In short, your hands stay on your device unless you sync them.</p>
+</main>
+</body>
+</html>

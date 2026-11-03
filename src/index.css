@@ -72,3 +72,11 @@ body {
   main { padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px)) !important; }
 }
 body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+
+/* Touch polish: no iOS zoom-on-focus (inputs >= 16px on phones), no grey tap flash, no page bounce. */
+@media (max-width: 767px) {
+  input, textarea, select { font-size: 16px !important; }
+}
+a, button { -webkit-tap-highlight-color: transparent; }
+html { overscroll-behavior-y: none; }
+.native button, .native a { -webkit-touch-callout: none; }

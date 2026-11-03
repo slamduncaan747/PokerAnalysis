@@ -10,6 +10,7 @@ import { buildSteps, tableAt } from '../lib/replay.ts';
 import type { Hand, Street } from '../lib/types.ts';
 import { useStore } from '../store.ts';
 import { useFilteredHands } from './Hands.tsx';
+import { useMediaQuery } from '../lib/useMediaQuery.ts';
 
 const GtoPanel = lazy(() => import('../components/GtoPanel.tsx'));
 
@@ -115,7 +116,15 @@ function CoachPanel({ d, hand }: { d: Decision; hand: Hand }) {
   );
 }
 
+/** Remount per hand so step state from the previous hand never leaks into the next one. */
 export default function HandReview() {
+  const { id } = useParams();
+  const [params] = useSearchParams();
+  return <HandReviewInner key={`${id}|${params.get('a') ?? ''}`} />;
+}
+
+function HandReviewInner() {
+  const wide = useMediaQuery('(min-width: 1280px)');
   const { id } = useParams();
   const handId = decodeURIComponent(id ?? '');
   const hand = useStore((s) => s.hands.get(handId));
@@ -136,8 +145,8 @@ export default function HandReview() {
     if (worst && worst.evLoss > 0) return steps.findIndex((s) => s.actionIndex === worst.actionIndex);
     return 0;
   }, [analysis, steps, deepLink]);
-  const [step, setStep] = useState(0);
-  useEffect(() => setStep(Math.max(0, firstInteresting)), [handId, firstInteresting]);
+  const [stepRaw, setStep] = useState(() => Math.max(0, firstInteresting));
+  const step = Math.max(0, Math.min(stepRaw, steps.length - 1));
 
   const idx = list.findIndex((a) => a.handId === handId);
   const prevId = idx > 0 ? list[idx - 1].handId : null;
@@ -211,6 +220,23 @@ export default function HandReview() {
     g.items.push({ stepIdx: si, text: `${who} ${a.type}${amt}${a.allIn ? ' (all-in)' : ''}`, d: decByAction.get(s.actionIndex), hero: a.player === hand.hero });
   });
 
+  // Phones: coach verdict first, then the solver. Wide screens: solver under the table.
+  const gtoSection = (
+    <>
+        {curDecision && curDecision.street !== 'preflop' ? (
+          <Suspense fallback={null}>
+            <GtoPanel key={`${hand.id}-${curDecision.actionIndex}`} hand={hand} actionIndex={curDecision.actionIndex} decision={curDecision} />
+          </Suspense>
+        ) : (
+          analysis.decisions.some((d) => d.street !== 'preflop') && (
+            <div className="panel p-4 text-sm text-mute">
+              Step to one of your flop, turn or river decisions (badges in the move list) to run the <b className="text-ink">GTO solver</b> on it.
+            </div>
+          )
+        )}
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -274,17 +300,7 @@ export default function HandReview() {
             </button>
           </div>
         </div>
-        {curDecision && curDecision.street !== 'preflop' ? (
-          <Suspense fallback={null}>
-            <GtoPanel key={`${hand.id}-${curDecision.actionIndex}`} hand={hand} actionIndex={curDecision.actionIndex} decision={curDecision} />
-          </Suspense>
-        ) : (
-          analysis.decisions.some((d) => d.street !== 'preflop') && (
-            <div className="panel p-4 text-sm text-mute">
-              Step to one of your flop, turn or river decisions (badges in the move list) to run the <b className="text-ink">GTO solver</b> on it.
-            </div>
-          )
-        )}
+        {wide && gtoSection}
         </div>
 
         <div className="flex flex-col gap-4">
@@ -312,6 +328,8 @@ export default function HandReview() {
               </div>
             )}
           </div>
+
+          {!wide && gtoSection}
 
           <div className="panel max-h-[420px] overflow-y-auto p-2 scroll-thin">
             {byStreet.map((g) => (

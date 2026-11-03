@@ -69,7 +69,14 @@ npm run gen:demo  # regenerate public/demo/sample-hands.txt from the simulator
 npm run build:solver  # rebuild the WebAssembly solver (needs Rust; output is committed)
 ```
 
-## Accounts & sync (computer ↔ phone)
+## Computer ↔ phone (no account needed)
+
+Open **Sync & devices** on both devices, tap **Show a code** on one and type the code on the other:
+hands and training progress sync both ways over a direct, encrypted WebRTC connection (the public
+PeerJS server only introduces the two devices). Or use **Export backup** → AirDrop the .zip →
+**Import a backup**.
+
+## Accounts & sync (optional, Supabase)
 
 Without an account everything stays on the device. Signing in (email + password) syncs your
 raw hand histories and training progress through [Supabase](https://supabase.com); each device
@@ -110,8 +117,12 @@ npm run ios:open
 ```
 
 In Xcode: select the **App** target → Signing & Capabilities → choose your Team (change the bundle
-id `io.github.slamduncaan747.leakfinder` if you like) → pick your iPhone and press Run. For
-TestFlight: Product → Archive → Distribute App. Re-run `npm run ios:sync` after web changes.
+id `io.github.slamduncaan747.leakfinder` if you like) → pick your iPhone and press Run. Re-run
+`npm run ios:sync` after web changes.
+
+TestFlight and App Store submission — from Xcode, one script, or a GitHub Actions workflow — are
+covered step by step in [RELEASE.md](RELEASE.md); the store listing, privacy answers and screenshots
+are in [`appstore/`](appstore).
 
 No Mac? Open the website on the iPhone in Safari → Share → **Add to Home Screen** for an
 app-like, full-screen install.

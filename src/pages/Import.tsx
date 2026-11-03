@@ -1,7 +1,10 @@
 import { AlertTriangle, CheckCircle2, ClipboardPaste, FileText, Lock, Sparkles, Trash2, UploadCloud } from 'lucide-react';
 import { useRef, useState, type DragEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { mergeProgress } from '../cloud/merge.ts';
 import { readHandFiles } from '../lib/files.ts';
+import type { Progress } from '../lib/training/progress.ts';
+import { PROGRESS_FILE } from '../transfer/device.ts';
 import { useStore } from '../store.ts';
 
 const SITES = ['PokerStars', 'GGPoker / Natural8', 'CoinPoker', 'ACR / WPN', 'Winamax', 'Ignition / Bovada', 'Most Stars-style exports'];
@@ -24,7 +27,17 @@ export function DropZone({ compact = false }: { compact?: boolean }) {
     const h = window.location.hash.replace(/^#/, '') || '/';
     if (h === '/' || h.startsWith('/import')) navigate('/');
   };
-  const go = async (files: { name: string; text: string }[]) => {
+  const go = async (all: { name: string; text: string }[]) => {
+    // A Leakfinder backup carries training progress next to the hands: merge it in.
+    for (const f of all.filter((x) => x.name.endsWith(PROGRESS_FILE))) {
+      try {
+        const s = useStore.getState();
+        s.setProgress(mergeProgress(s.progress, JSON.parse(f.text) as Progress));
+      } catch {
+        /* not a progress file */
+      }
+    }
+    const files = all.filter((x) => !/\.json$/i.test(x.name));
     if (!files.length) return;
     await importFiles(files);
     goHome();
