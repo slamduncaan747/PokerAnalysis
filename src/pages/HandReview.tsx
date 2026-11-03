@@ -11,10 +11,10 @@ import type { Hand, Street } from '../lib/types.ts';
 import { useStore } from '../store.ts';
 import { useFilteredHands } from './Hands.tsx';
 import { useMediaQuery } from '../lib/useMediaQuery.ts';
+import { realStakeOf, useUnits } from '../settings.ts';
 
 const GtoPanel = lazy(() => import('../components/GtoPanel.tsx'));
 
-const fmt = (x: number) => `${x >= 0 ? '+' : ''}${Math.round(x * 100) / 100}`;
 
 function moneyStr(hand: Hand, chips: number) {
   if (!hand.currency) return `${Math.round(chips).toLocaleString()} chips`;
@@ -29,16 +29,18 @@ function CoachPanel({ d, hand }: { d: Decision; hand: Hand }) {
   const hasEV = d.options.some((o) => o.ev !== undefined);
   const sorted = hasEV ? [...d.options].sort((a, b) => (b.ev ?? 0) - (a.ev ?? 0)) : d.options;
   const bestEv = Math.max(...d.options.map((o) => o.ev ?? -1e9));
+  const { fmt: f, tx } = useUnits(realStakeOf(hand));
+  const sf = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${f(Math.abs(x))}`;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3 rounded-xl p-3" style={{ background: `color-mix(in srgb, ${meta.color} 14%, transparent)` }}>
         <ClassBadge c={d.classification} size={34} />
         <div className="min-w-0">
           <div className="font-bold leading-tight">
-            {d.heroLabel} <span style={{ color: meta.color }}>{meta.text}</span>
+            {tx(d.heroLabel)} <span style={{ color: meta.color }}>{meta.text}</span>
           </div>
           <div className="text-xs text-mute">
-            {d.evLoss > 0.005 ? `Costs about ${d.evLoss} bb` : d.classification === 'book' ? 'Matches the baseline chart' : 'No EV lost'} · {d.spot}
+            {d.evLoss > 0.005 ? `Costs about ${f(d.evLoss)}` : d.classification === 'book' ? 'Matches the baseline chart' : 'No EV lost'} · {tx(d.spot)}
           </div>
         </div>
       </div>
@@ -47,8 +49,8 @@ function CoachPanel({ d, hand }: { d: Decision; hand: Hand }) {
           <Lightbulb size={16} className="text-inaccuracy" />
           {showBest ? (
             <span>
-              Best: <b className="text-best">{best.label}</b>
-              {best.ev !== undefined && <span className="text-mute"> ({fmt(best.ev)} bb)</span>}
+              Best: <b className="text-best">{tx(best.label)}</b>
+              {best.ev !== undefined && <span className="text-mute"> ({sf(best.ev)})</span>}
             </span>
           ) : (
             <span className="text-mute">Show best move</span>
@@ -59,15 +61,15 @@ function CoachPanel({ d, hand }: { d: Decision; hand: Hand }) {
         <Pill>{d.handLabel}</Pill>
         {d.equity !== undefined && <Pill tone="good">Equity {Math.round(d.equity * 100)}%</Pill>}
         {d.potOdds !== undefined && <Pill tone="warn">Need {Math.round(d.potOdds * 100)}%</Pill>}
-        <Pill>Pot {d.potBB} bb</Pill>
-        {d.toCallBB > 0 && <Pill>To call {d.toCallBB} bb</Pill>}
+        <Pill>Pot {f(d.potBB)}</Pill>
+        {d.toCallBB > 0 && <Pill>To call {f(d.toCallBB)}</Pill>}
       </div>
       <div className="overflow-hidden rounded-xl border border-line">
         <table className="w-full text-sm">
           <thead className="bg-panel-2 text-[11px] uppercase tracking-wide text-dim">
             <tr>
               <th className="px-3 py-1.5 text-left font-medium">Option</th>
-              <th className="px-3 py-1.5 text-right font-medium">{hasEV ? 'EV (bb)' : 'Chart'}</th>
+              <th className="px-3 py-1.5 text-right font-medium">{hasEV ? 'EV' : 'Chart'}</th>
               {hasEV && <th className="px-3 py-1.5 text-right font-medium">Folds</th>}
             </tr>
           </thead>
@@ -79,14 +81,14 @@ function CoachPanel({ d, hand }: { d: Decision; hand: Hand }) {
                 <tr key={o.key} className={`border-t border-line/60 ${isHero ? 'bg-panel-3/70' : ''}`}>
                   <td className="px-3 py-1.5">
                     <span className="flex items-center gap-2">
-                      {o.label}
+                      {tx(o.label)}
                       {isHero && <span className="rounded bg-ink/10 px-1 text-[10px] font-semibold text-mute">YOU</span>}
                       {isBest && <span className="rounded bg-best/20 px-1 text-[10px] font-semibold text-best">BEST</span>}
                     </span>
                   </td>
                   <td className={`px-3 py-1.5 text-right tabular-nums ${isBest ? 'font-semibold text-best' : ''}`}>
                     {hasEV ? (
-                      <span title={`${fmt((o.ev ?? 0) - bestEv)} vs best`}>{fmt(o.ev ?? 0)}</span>
+                      <span title={`${sf((o.ev ?? 0) - bestEv)} vs best`}>{sf(o.ev ?? 0)}</span>
                     ) : (
                       `${Math.round((o.freq ?? 0) * 100)}%`
                     )}
@@ -102,7 +104,7 @@ function CoachPanel({ d, hand }: { d: Decision; hand: Hand }) {
         {d.explanation.map((e, i) => (
           <li key={i} className="flex gap-2">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-mute" />
-            <span>{e}</span>
+            <span>{tx(e)}</span>
           </li>
         ))}
       </ul>
@@ -129,6 +131,7 @@ function HandReviewInner() {
   const handId = decodeURIComponent(id ?? '');
   const hand = useStore((s) => s.hands.get(handId));
   const analysis = useStore((s) => s.analyses.get(handId));
+  const units = useUnits(hand ? realStakeOf(hand) : undefined);
   const list = useFilteredHands();
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -204,6 +207,7 @@ function HandReviewInner() {
   for (const d of analysis.decisions) if (!d.trivial) counts.set(d.classification, (counts.get(d.classification) ?? 0) + 1);
 
   const stakes = hand.currency ? `${moneyStr(hand, hand.sb)}/${moneyStr(hand, hand.bb)}` : `${hand.sb}/${hand.bb}${hand.ante ? ` (${hand.ante})` : ''}`;
+  const su = (x: number) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${units.fmt(Math.abs(x))}`;
 
   // Move list grouped by street
   const byStreet: { street: Street; items: { stepIdx: number; text: string; d?: Decision; hero: boolean }[] }[] = [];
@@ -249,7 +253,7 @@ function HandReviewInner() {
               <CardText cards={hand.heroCards} />
               <span>{analysis.heroPosition}</span>
               <span className={analysis.netBB > 0 ? 'text-win' : analysis.netBB < 0 ? 'text-loss' : 'text-mute'}>
-                {fmt(analysis.netBB)} bb
+                {su(analysis.netBB)}
               </span>
             </div>
             <div className="text-xs text-mute">
@@ -318,10 +322,10 @@ function HandReviewInner() {
                     </div>
                   ))}
                   {!counts.size && <div className="text-mute">Routine hand — nothing to review.</div>}
-                  {analysis.evLossBB > 0 && <div className="text-xs text-loss">EV lost: {analysis.evLossBB} bb</div>}
+                  {analysis.evLossBB > 0 && <div className="text-xs text-loss">EV lost: {units.fmt(analysis.evLossBB)}</div>}
                   {analysis.evNetBB !== analysis.netBB && (
                     <div className="text-xs text-mute">
-                      All-in EV: {fmt(analysis.evNetBB)} bb ({analysis.netBB > analysis.evNetBB ? 'ran good' : 'ran bad'})
+                      All-in EV: {su(analysis.evNetBB)} ({analysis.netBB > analysis.evNetBB ? 'ran good' : 'ran bad'})
                     </div>
                   )}
                 </div>
@@ -354,7 +358,7 @@ function HandReviewInner() {
               onClick={() => setStep(steps.length - 1)}
               className={`flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-sm ${isFinal ? 'bg-panel-3' : 'hover:bg-panel-2'} text-mute`}
             >
-              Result: {fmt(analysis.netBB)} bb {hand.wentToShowdown ? '(showdown)' : ''}
+              Result: {su(analysis.netBB)} {hand.wentToShowdown ? '(showdown)' : ''}
             </button>
           </div>
 

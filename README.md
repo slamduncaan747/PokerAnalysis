@@ -5,6 +5,16 @@ every decision graded from **Brilliant / Great / Best** down to **Inaccuracy / M
 your biggest leaks ranked by how many big blinds they cost, and **training drills built from your
 own mistakes** (with spaced repetition) so the fixes actually stick.
 
+There are **two apps on one engine**:
+
+- **The web app** (computers): import hand histories and get the full analytics: game review, leaks, stats, hand replayer and the GTO solver.
+- **The phone app** (iOS app, or the site opened on a phone): a consumer puzzle trainer, like a daily Wordle mixed with chess.com puzzles.
+  - The **Daily Hand**: three new hands a day, the same for everyone, with one try each and a streak.
+  - **Rated puzzles** that adapt to your Elo.
+  - **My Game**: practise the leaks found in your own imported hands.
+
+  It works fully on its own, so friends who've never heard of hand histories can just solve puzzles.
+
 Everything runs **in your browser**. Hand histories are never uploaded anywhere — they're parsed,
 analyzed and stored locally (IndexedDB). It's a static site, so hosting is free (GitHub Pages,
 Netlify, Vercel, or just `npm run dev`).
@@ -20,6 +30,26 @@ Netlify, Vercel, or just `npm run dev`).
 | **Hand review** | Replayer with an equity "eval bar", move list annotated with classification badges, and a coach panel for each of your decisions: what you did, the best option, the EV of every option (or the chart frequencies preflop), your equity vs. the opponent's modeled range, pot odds, and a plain-English explanation. Keyboard: ←/→ step, ↑/↓ change hand. |
 | **GTO solver** | A real postflop game-theory solver ([b-inary/postflop-solver](https://github.com/b-inary/postflop-solver), compiled to WebAssembly) runs in your browser. In the hand replayer, click **Solve this spot** on any heads-up flop/turn/river decision: both players' ranges are modeled from the hand, the exact bet sizes you faced are added to the game tree, and you get the solver's strategy and EV for your exact hand, a 13×13 range strategy grid, and a tree you can click through. River spots solve in about a second, turns in ~3–10 s, flops in 1–3 min with a lean tree. There's also a standalone **Solver** page with presets (BTN vs BB, CO vs BB, 3-bet pots…) and fully custom ranges, board and sizes. |
 | **Training** | *Review your mistakes*: a Leitner spaced-repetition deck made from your own errors (miss it and it comes back soon; get it right and it comes back in 1 → 3 → 7 → 16 days). *Drills*: unlimited generated spots for opening ranges, facing opens, BB defense, facing 3-bets, vs limpers, preflop all-ins, pot odds, bluff-catching, value betting, bluffing and draws — graded by the same engine. Mastery tracking per drill. |
+
+## Phone app: puzzles and the Daily Hand
+
+| | |
+|---|---|
+| **Today** | The **Daily Hand**: three puzzles a day (Warm-up, Think, Boss). They're the same for everyone, deterministic by date, with one try each. Streak counter and a spoiler-free share card (`Leakfinder Daily #12 🟩🟥🟩`). This tab also shows your rating, quick themes and your leak of the day. |
+| **Puzzles** | **Rated puzzles** with an Elo rating: solve one and you go up, miss one and you go down. K is 48 → 32 → 20 as the rating settles. The next puzzle is picked near your rating, slightly above it, skipping ones you've seen. Themes: value bets, bluffs, bluff-catching, big folds, checking, raises, preflop, pot odds. You also get a rating graph, recent attempts and a review of each one. |
+| **My Game** | Your imported hands, kept separate from puzzles. Spaced-repetition review of your own mistakes, your biggest leaks as drills, mastery per drill, and the costliest hands read like a chess game review. Hands arrive from the computer with a 6-character pairing code, from a file, or from the 600 demo hands. |
+| **Profile** | Rating history, stats, strengths and weaknesses by theme. Settings: show amounts in **big blinds or money at a stake** (presets from $0.01/$0.02 to $5/$10; $, €, £ or ₮; optionally each hand's real stakes), haptics and sounds. |
+
+**The puzzle bank** (`public/puzzles/bank.json`, ~1,900 puzzles) is generated offline by `npm run gen:puzzles`.
+
+- **Postflop puzzles:** river spots from 10 common lines (single-raised, 3-bet and blind-vs-blind pots) are **solved with the GTO solver**. A spot is kept only when the best play is clear for the hero's exact hand. That means one kind of action within 2% of the pot from the best EV, at least 80% solver frequency, and a big gap to the alternatives.
+- **Preflop puzzles:** pure chart spots.
+- **Maths puzzles:** pot odds.
+- **Difficulty:** how counter-intuitive the answer is for the hand's raw strength, how close the runner-up is and how mixed the solver is. Scores are then spread onto a bell curve (mean 1250, sd 400).
+
+Haptics use the Taptic Engine on iOS (`@capacitor/haptics`) and `navigator.vibrate` elsewhere. Sounds are synthesized with Web Audio.
+
+On a computer, open the phone app with `?ui=mobile` (or the sidebar's "Phone app" link). On a phone, open the web app with `?ui=web`. The choice is remembered.
 
 ## How the engine works
 
@@ -66,6 +96,7 @@ Other scripts:
 npm test          # parser, engine and training tests (vitest)
 npm run build     # static production build in dist/
 npm run gen:demo  # regenerate public/demo/sample-hands.txt from the simulator
+npm run gen:puzzles  # regenerate the puzzle bank with the solver (~12 min)
 npm run build:solver  # rebuild the WebAssembly solver (needs Rust; output is committed)
 ```
 
@@ -146,8 +177,11 @@ src/lib/solver/      spot builder (hand → solver ranges/tree) and solver drive
 src/solver/pkg/      generated WebAssembly solver package (committed)
 solver/              Rust crate: wasm-bindgen bindings for postflop-solver
 src/workers/         analysis + solver Web Workers (keep the UI responsive)
-src/pages/           Dashboard, Hands, Hand review, Leaks, Train, Train session, Import
-scripts/             demo-hand simulator, preflop equity table generator
+src/pages/           web app: Dashboard, Hands, Hand review, Leaks, Train, Train session, Import
+src/mobile/          phone app: Today, Puzzles, My Game, Profile, puzzle player, Daily Hand
+src/puzzles/         puzzle types, Elo/adaptive selection/daily set/streaks engine, store
+public/puzzles/      generated puzzle bank (bank.json)
+scripts/             demo-hand simulator, preflop equity table generator, puzzle bank generator
 ```
 
 ## License

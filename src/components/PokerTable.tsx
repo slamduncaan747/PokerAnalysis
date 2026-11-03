@@ -2,11 +2,8 @@ import { useEffect, useState } from 'react';
 import type { Hand } from '../lib/types.ts';
 import type { TableState } from '../lib/replay.ts';
 import { PlayingCard } from './ui.tsx';
+import { realStakeOf, useUnits } from '../settings.ts';
 
-const bbStr = (chips: number, bb: number) => {
-  const v = chips / bb;
-  return `${v >= 100 ? Math.round(v) : Math.round(v * 10) / 10}`;
-};
 
 function useNarrow(q = '(max-width: 640px)') {
   const [m, setM] = useState(() => typeof window !== 'undefined' && window.matchMedia(q).matches);
@@ -21,6 +18,7 @@ function useNarrow(q = '(max-width: 640px)') {
 
 export default function PokerTable({ hand, state, highlight }: { hand: Hand; state: TableState; highlight?: string }) {
   const narrow = useNarrow();
+  const { fmt } = useUnits(realStakeOf(hand));
   // Portrait layout on phones: taller oval, smaller cards.
   const geo = narrow ? { rx: 38, ry: 43, bx: 22, by: 28, aspect: 'aspect-[4/5]', felt: 'inset-[10%_9%]', board: 'xs' as const, hole: 'xs' as const }
     : { rx: 43, ry: 41, bx: 27, by: 25, aspect: 'aspect-[16/10]', felt: 'inset-[9%_7%]', board: 'md' as const, hole: 'sm' as const };
@@ -35,7 +33,7 @@ export default function PokerTable({ hand, state, highlight }: { hand: Hand; sta
       {/* Center: pot + board */}
       <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2">
         <div className="rounded-full bg-black/35 px-3 py-0.5 text-xs font-semibold text-white/90">
-          Pot {bbStr(state.totalPot, bb)} bb
+          Pot {fmt(state.totalPot / bb)}
         </div>
         <div className="flex gap-1.5">
           {Array.from({ length: 5 }).map((_, i) =>
@@ -83,7 +81,7 @@ export default function PokerTable({ hand, state, highlight }: { hand: Hand; sta
                   <span className="rounded bg-panel-3 px-1 text-[9px] text-mute">{s.position}</span>
                   <span className={`${narrow ? 'max-w-[52px] text-[10px]' : 'max-w-[80px]'} truncate`}>{s.isHero ? 'You' : s.name}</span>
                 </div>
-                <div className="text-[11px] tabular-nums text-mute">{s.allIn && !state.final ? 'ALL-IN' : `${bbStr(s.stack, bb)} bb`}</div>
+                <div className="text-[11px] tabular-nums text-mute">{s.allIn && !state.final ? 'ALL-IN' : fmt(s.stack / bb)}</div>
               </div>
               {s.lastAction && (
                 <div className={`mt-1 rounded-md px-1.5 py-[1px] text-[10px] font-semibold ${s.lastAction.startsWith('Wins') ? 'bg-accent text-black' : s.lastAction === 'Fold' ? 'bg-black/40 text-white/60' : 'bg-white/90 text-black'}`}>
@@ -94,7 +92,7 @@ export default function PokerTable({ hand, state, highlight }: { hand: Hand; sta
             {s.bet > 0 && (
               <div className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1" style={{ left: `${bx}%`, top: `${by}%` }}>
                 <span className="inline-block h-3.5 w-3.5 rounded-full border-2 border-dashed border-white/70 bg-[#d64545]" />
-                <span className="rounded bg-black/40 px-1 text-[11px] font-semibold tabular-nums text-white">{bbStr(s.bet, bb)}</span>
+                <span className="rounded bg-black/40 px-1 text-[11px] font-semibold tabular-nums text-white">{fmt(s.bet / bb)}</span>
               </div>
             )}
             {s.position === 'BTN' && (

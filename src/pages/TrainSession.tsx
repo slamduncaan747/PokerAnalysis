@@ -5,19 +5,20 @@ import { ClassBadge, PlayingCard, ProgressBar } from '../components/ui.tsx';
 import { DRILL_INFO, LEAKS, type DrillType } from '../lib/engine/leaks.ts';
 import type { LeakId } from '../lib/engine/types.ts';
 import { generateQuestion, gradeAnswer, questionFromDecision, type Question } from '../lib/training/drills.ts';
-import { dueCards, mastery, recordAttempt } from '../lib/training/progress.ts';
+import { mastery, recordAttempt } from '../lib/training/progress.ts';
+import { buildQueue, type QueueItem } from '../lib/training/queue.ts';
 import { useStore } from '../store.ts';
+import { formatAmount, realStakeOf, rewriteAmounts, useSettings, useUnits, type RealStake } from '../settings.ts';
 import { useOwnMistakes } from './Train.tsx';
 
-type QueueItem = { own: { handId: string; actionIndex: number; drill: DrillType } } | { gen: DrillType };
-
-function Spot({ q }: { q: Question }) {
+function Spot({ q, real }: { q: Question; real?: RealStake }) {
+  const { fmt } = useUnits(real);
   if (q.kind === 'math') {
     return (
       <div className="felt flex min-h-[180px] flex-col items-center justify-center gap-3 rounded-[40px] p-6 text-white">
         <div className="text-sm text-white/80">Pot</div>
-        <div className="text-3xl font-extrabold">{Math.round((q.potBB - q.toCallBB) * 10) / 10} bb</div>
-        <div className="rounded-full bg-black/35 px-3 py-1 text-sm">Villain bets {q.toCallBB} bb</div>
+        <div className="text-3xl font-extrabold">{fmt(q.potBB - q.toCallBB)}</div>
+        <div className="rounded-full bg-black/35 px-3 py-1 text-sm">Villain bets {fmt(q.toCallBB)}</div>
       </div>
     );
   }
@@ -33,14 +34,14 @@ function Spot({ q }: { q: Question }) {
           </span>
         )}
         <span className="rounded-full bg-black/35 px-2.5 py-1">
-          Pot <b>{q.potBB} bb</b>
+          Pot <b>{fmt(q.potBB)}</b>
         </span>
         {q.toCallBB > 0 && (
           <span className="rounded-full bg-black/35 px-2.5 py-1">
-            To call <b>{q.toCallBB} bb</b>
+            To call <b>{fmt(q.toCallBB)}</b>
           </span>
         )}
-        <span className="rounded-full bg-black/35 px-2.5 py-1">Stack {q.stackBB} bb</span>
+        <span className="rounded-full bg-black/35 px-2.5 py-1">Stack {fmt(q.stackBB)}</span>
       </div>
       <div className="flex min-h-[58px] gap-1.5">
         {q.board.length ? q.board.map((c, i) => <PlayingCard key={i} card={c} size="md" />) : <span className="self-center text-sm text-white/60">Preflop</span>}
@@ -68,44 +69,13 @@ export default function TrainSession() {
   const setProgress = useStore((s) => s.setProgress);
   const mistakes = useOwnMistakes();
   const [round, setRound] = useState(0);
+  const unitSettings = useSettings();
 
-  const queue = useMemo<QueueItem[]>(() => {
-    const q: QueueItem[] = [];
-    if (handParam && idxParam) {
-      const a = analyses.get(handParam);
-      const d = a?.decisions.find((x) => x.actionIndex === parseInt(idxParam));
-      if (d?.leak) q.push({ own: { handId: handParam, actionIndex: d.actionIndex, drill: LEAKS[d.leak].drill } });
-    }
-    const pool = leakParam ? mistakes.filter((m) => m.leak === leakParam) : mistakes;
-    if (own || leakParam || handParam) {
-      const due = dueCards(progress).map((c) => `own-${c.handId}-${c.actionIndex}`);
-      const ordered = [...pool].sort((x, y) => {
-        const dx = due.includes(x.qid) ? 0 : 1;
-        const dy = due.includes(y.qid) ? 0 : 1;
-        const bx = progress.cards[x.qid]?.box ?? 0;
-        const by = progress.cards[y.qid]?.box ?? 0;
-        return dx - dy || bx - by || y.loss - x.loss;
-      });
-      const ownCap = own ? n : leakParam ? Math.ceil(n * 0.4) : n;
-      for (const m of ordered) {
-        if (q.length >= ownCap) break;
-        if (q.some((x) => 'own' in x && x.own.handId === m.handId && x.own.actionIndex === m.actionIndex)) continue;
-        if ((progress.cards[m.qid]?.box ?? 0) >= 5) continue;
-        q.push({ own: { handId: m.handId, actionIndex: m.actionIndex, drill: m.drill } });
-      }
-    }
-    const genDrill: DrillType | null = drillParam ?? (leakParam ? LEAKS[leakParam].drill : null);
-    if (genDrill) while (q.length < n) q.push({ gen: genDrill });
-    // Shuffle own + generated a little for variety (keep the first if it was explicitly requested).
-    const head = handParam ? q.slice(0, 1) : [];
-    const tail = q.slice(head.length);
-    for (let i = tail.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [tail[i], tail[j]] = [tail[j], tail[i]];
-    }
-    return [...head, ...tail].slice(0, n);
+  const queue = useMemo<QueueItem[]>(
+    () => buildQueue({ drill: drillParam, leak: leakParam, own, hand: handParam, idx: idxParam ? parseInt(idxParam) : null, n }, mistakes, progress, analyses),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [drillParam, leakParam, own, handParam, idxParam, n, round, analyses.size]);
+    [drillParam, leakParam, own, handParam, idxParam, n, round, analyses.size],
+  );
 
   const [i, setI] = useState(0);
   const [answer, setAnswer] = useState<string | null>(null);
@@ -227,6 +197,10 @@ export default function TrainSession() {
 
   const graded = answer ? gradeAnswer(question, answer) : null;
   const hasEV = question.options.some((o) => o.ev !== undefined);
+  const ownHand = question.handId ? hands.get(question.handId) : undefined;
+  const real = ownHand ? realStakeOf(ownHand) : undefined;
+  const tx = (t: string) => rewriteAmounts(t, unitSettings, real);
+  const fmtU = (x: number) => formatAmount(x, unitSettings, real);
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -249,11 +223,11 @@ export default function TrainSession() {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
         <div className="flex flex-col gap-3">
-          <Spot q={question} />
+          <Spot q={question} real={real} />
           {question.history.length > 0 && (
             <div className="panel flex flex-col gap-1 p-3 text-sm text-mute">
               {question.history.map((h, k) => (
-                <div key={k}>{h}</div>
+                <div key={k}>{tx(h)}</div>
               ))}
             </div>
           )}
@@ -269,7 +243,7 @@ export default function TrainSession() {
             <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-dim">
               {question.source === 'own' ? 'Your hand' : DRILL_INFO[question.drill].title}
             </div>
-            <div className="text-lg font-semibold">{question.prompt}</div>
+            <div className="text-lg font-semibold">{tx(question.prompt)}</div>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {question.options.map((o, k) => {
                 const isChosen = answer === o.key;
@@ -282,8 +256,8 @@ export default function TrainSession() {
                 }
                 return (
                   <button key={o.key} disabled={!!answer} onClick={() => choose(o.key)} className={`btn ${cls} !justify-between !py-3 text-left`}>
-                    <span>{o.label}</span>
-                    {answer && (hasEV ? <span className="text-xs tabular-nums text-mute">{(o.ev ?? 0) >= 0 ? '+' : ''}{o.ev}bb</span> : o.freq !== undefined ? <span className="text-xs text-mute">{Math.round(o.freq * 100)}%</span> : null)}
+                    <span>{tx(o.label)}</span>
+                    {answer && (hasEV ? <span className="text-xs tabular-nums text-mute">{(o.ev ?? 0) >= 0 ? '+' : '−'}{fmtU(Math.abs(o.ev ?? 0))}</span> : o.freq !== undefined ? <span className="text-xs text-mute">{Math.round(o.freq * 100)}%</span> : null)}
                     {!answer && <span className="kbd">{k + 1}</span>}
                   </button>
                 );
@@ -299,15 +273,15 @@ export default function TrainSession() {
               </div>
               {!graded.correct || answer !== question.bestKey ? (
                 <div className="text-sm">
-                  Best: <b className="text-best">{graded.best.label}</b>
-                  {graded.lossBB !== undefined && graded.lossBB > 0 && <span className="text-mute"> — your choice costs {Math.round(graded.lossBB * 100) / 100}bb</span>}
+                  Best: <b className="text-best">{tx(graded.best.label)}</b>
+                  {graded.lossBB !== undefined && graded.lossBB > 0 && <span className="text-mute"> — your choice costs {fmtU(graded.lossBB)}</span>}
                 </div>
               ) : null}
               <ul className="flex flex-col gap-1.5 text-sm text-ink/90">
                 {question.explanation.map((e, k) => (
                   <li key={k} className="flex gap-2">
                     <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-mute" />
-                    {e}
+                    {tx(e)}
                   </li>
                 ))}
               </ul>

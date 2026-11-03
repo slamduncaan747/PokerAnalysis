@@ -6,10 +6,10 @@ const config: CapacitorConfig = {
   appId: 'io.github.slamduncaan747.leakfinder',
   appName: 'Leakfinder',
   webDir: 'dist',
-  backgroundColor: '#0d0f13',
+  backgroundColor: '#08090c',
   ios: {
     contentInset: 'never',
-    backgroundColor: '#0d0f13',
+    backgroundColor: '#08090c',
     preferredContentMode: 'mobile',
   },
 };

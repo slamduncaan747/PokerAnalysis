@@ -1,23 +1,16 @@
 import { Flame, GraduationCap, History, Repeat, Sparkles, Target } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { ProgressBar, SectionTitle, StatTile } from '../components/ui.tsx';
-import { DRILL_INFO, LEAKS, type DrillType } from '../lib/engine/leaks.ts';
-import { isError } from '../lib/engine/types.ts';
+import { DRILL_INFO, type DrillType } from '../lib/engine/leaks.ts';
 import { dailyActivity, dueCards, mastery, syncCards } from '../lib/training/progress.ts';
+import { useOwnMistakesOf } from '../lib/training/queue.ts';
 import { useStore } from '../store.ts';
 
 export function useOwnMistakes() {
   const ordered = useStore((s) => s.ordered);
-  return useMemo(() => {
-    const out: { qid: string; handId: string; actionIndex: number; drill: DrillType; leak?: string; loss: number }[] = [];
-    for (const a of ordered)
-      for (const d of a.decisions)
-        if (!d.trivial && isError(d.classification) && d.leak)
-          out.push({ qid: `own-${a.handId}-${d.actionIndex}`, handId: a.handId, actionIndex: d.actionIndex, drill: LEAKS[d.leak].drill, leak: d.leak, loss: d.evLoss });
-    return out.sort((x, y) => y.loss - x.loss);
-  }, [ordered]);
+  return useOwnMistakesOf(ordered);
 }
 
 const ALL_DRILLS: DrillType[] = ['rfi', 'vs_open', 'bb_defense', 'vs_3bet', 'vs_limp', 'allin', 'pot_odds', 'bluffcatch', 'value', 'bluff', 'draws'];

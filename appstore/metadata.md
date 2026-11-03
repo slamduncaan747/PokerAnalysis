@@ -7,8 +7,8 @@ Apple's limits by `appstore/check-metadata.mjs`.
 
 | Field | Value |
 |---|---|
-| Name (≤30) | Leakfinder: Poker Hand Review |
-| Subtitle (≤30) | GTO solver & poker trainer |
+| Name (≤30) | Leakfinder: Poker Puzzles |
+| Subtitle (≤30) | Daily hands & GTO training |
 | Bundle ID | io.github.slamduncaan747.leakfinder |
 | SKU | leakfinder-ios |
 | Primary category | Education |
@@ -21,61 +21,50 @@ Apple's limits by `appstore/check-metadata.mjs`.
 
 ## Promotional text (≤170)
 
-Import your hand histories and get a move-by-move review: every decision graded from Best to Blunder, your biggest leaks ranked, and drills built from your own mistakes.
+A new Daily Hand every day, plus rated poker puzzles checked by a GTO solver. Solve one and your rating climbs — the puzzles get harder as you get better.
 
 ## Description (≤4000)
 
-Leakfinder reviews your poker hands the way a chess engine reviews a game.
+Leakfinder is chess-puzzle training for poker. Every day there's a new Daily Hand, and an endless stream of rated puzzles that adapt to you. Solve a spot and your rating goes up; miss it and it drops. As you improve, the puzzles get harder.
 
-Import the hand history files from your poker client and every decision you made is graded: Brilliant, Great, Best, Excellent, Good, Book, Inaccuracy, Mistake, Missed value or Blunder, with the expected value of each option and a plain-English explanation of why.
+DAILY HAND
+• Three hands a day: a warm-up, a thinker and a boss
+• The same hands for everyone, one try each
+• Keep your streak alive and share your result (no spoilers)
 
-GAME REVIEW
-• Accuracy score for every session and every hand
-• Win rate, all-in EV, and big blinds lost to mistakes
-• Results graph with showdown and non-showdown winnings
-• Your stats (VPIP, PFR, 3-bet, c-bet, WTSD and more) compared with winning ranges
+RATED PUZZLES
+• Nearly 2,000 hand-picked spots with a difficulty rating
+• Postflop puzzles are checked by a real GTO solver for your exact hand, and only kept when one play is clearly best
+• After every answer: the solver's strategy, the EV of each option, your equity versus the pot odds, and the key idea in plain English
+• Themes to focus on: value bets, bluffs, bluff-catching, big folds, checking, raises, preflop and pot odds
+• Rating graph, best streaks, and strengths and weaknesses by theme
 
-LEAK FINDER
-• Mistakes grouped into leaks such as calling down too light, missing value with strong hands and under-defending the big blind
-• Ranked by how many big blinds each one costs you, with the exact hands as examples and how to fix them
+TRAIN YOUR OWN GAME
+• Play online? Import your hand histories on your computer at Leakfinder (free) and send them to your phone with a short pairing code
+• Every decision is graded like a chess game review, and your biggest leaks become drills
+• Spaced-repetition review of your own mistakes: miss a spot and it comes back soon; get it right and it comes back in days
+• Supports most major poker sites, including PokerStars, GGPoker, CoinPoker, ACR, Winamax and Ignition
 
-HAND REPLAYER
-• Step through any hand on a full table
-• Equity bar, your options with their EV, and the coach's verdict for each decision
+MADE FOR YOUR PHONE
+• Haptics, sounds and quick one-tap answers
+• Show amounts in big blinds or in money at your stake (for example $0.02/$0.05)
+• No account needed, no ads, no tracking — everything stays on your device
 
-GTO SOLVER ON YOUR PHONE
-• Solve any heads-up flop, turn or river spot to equilibrium, right on the device
-• See the solver's strategy for your exact hand, a 13×13 range grid, and click through the game tree
-• River spots solve in about a second, turns in seconds
-
-TRAINING THAT STICKS
-• Spaced-repetition review of your own mistakes: miss a spot and it comes back soon, get it right and it comes back in days
-• Unlimited drills: opening ranges, facing opens, big blind defense, 3-bets, all-ins, pot odds, bluff-catching, value betting, bluffing and draws
-• Mastery tracking for every skill
-
-YOUR DEVICES, YOUR DATA
-• Hands are analyzed on your device; no account needed
-• Sync your computer and iPhone with a short pairing code, directly between the devices
-• Or move everything with a backup file over AirDrop
-• No ads, no tracking
-
-Supports No-Limit Hold'em hand histories exported as text files (or a .zip of them) from most major poker clients. Leakfinder is a study tool; it does not offer real-money gaming.
-
-Free and open source (AGPL-3.0).
+Leakfinder is a study tool; it offers no real-money gaming. Free and open source (AGPL-3.0).
 
 ## Keywords (≤100, comma-separated, no spaces needed)
 
-poker,gto,solver,hand history,holdem,trainer,leaks,nlhe,ranges,equity,study,coach,replayer,odds
+poker,puzzles,daily,gto,solver,holdem,trainer,leaks,nlhe,study,coach,quiz,ranges,odds,rating
 
 ## What's New (version 1.0.0)
 
-First release: game review, leak finder, hand replayer, on-device GTO solver, training with spaced repetition, and device sync.
+First release: the Daily Hand, rated puzzles checked by a GTO solver, and training on your own hands.
 
 ## App Review information
 
 - Sign-in required: **No**.
 - Notes for the reviewer:
-  > Leakfinder is a study tool for poker players. It analyzes hand history text files the user exports from their poker client. No account or login is needed. To see the app with data, tap "Try with 600 demo hands" on the first screen. Then open any hand under Hands to see the move-by-move review, and tap "Solve this spot" on a flop/turn/river decision to run the on-device GTO solver. The app contains no real-money gambling, wagering or purchases and does not link to gambling operators.
+  > Leakfinder is a study tool for poker players, built like chess puzzles. No account or login is needed. On the Today tab, tap Play on the Daily Hand to solve three puzzles; the Puzzles tab has rated puzzles that adapt to the player's rating. To see the training on a player's own hands, open My Game and tap "Try it with 600 demo hands". The app contains no real-money gambling, wagering or purchases and does not link to gambling operators.
 
 ## App Privacy ("nutrition label")
 
@@ -102,7 +91,7 @@ none of the content categories gives a lower rating, with some risk that the rev
 
 `appstore/screenshots/iphone-6.9/` (1320 × 2868, required 6.9" iPhone size) and
 `appstore/screenshots/ipad-13/` (2064 × 2752, required because the app also runs on iPad). Upload
-1–6 in order: game review, hand review, GTO solver, leaks, training, sync. Regenerate them after UI
+1–6 in order: Today (Daily Hand), a puzzle, the solver's answer, Daily Hand result, rating, My Game. Regenerate them after UI
 changes with the demo data (see `RELEASE.md`).
 
 ## Export compliance

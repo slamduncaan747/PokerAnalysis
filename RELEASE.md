@@ -39,7 +39,7 @@ Re-run `npm run ios:sync` whenever the web code changes, then Run again.
 ## 2. Create the app in App Store Connect (one time)
 
 1. [App Store Connect](https://appstoreconnect.apple.com) → Apps → **+** → New App.
-2. Platform iOS · Name **Leakfinder: Poker Hand Review** · Language English (U.S.) ·
+2. Platform iOS · Name **Leakfinder: Poker Puzzles** · Language English (U.S.) ·
    Bundle ID **io.github.slamduncaan747.leakfinder** (Xcode registers it the first time you
    archive with automatic signing; if it's not in the list yet, do step 3 first and come back) · SKU `leakfinder-ios`.
 
@@ -87,7 +87,8 @@ Then pick the TestFlight build on the version page → **Add for Review** → **
 ## Regenerating screenshots
 
 With the app built and served (`npm run build && npx vite preview --port 4173`), the Playwright
-script used to make them loads the demo hands and captures each screen at 1320×2868 and 2064×2752.
+script used to make them opens the phone app (`?ui=mobile`) with a demo puzzle profile and the demo
+hands, and captures each screen at 1320×2868 and 2064×2752.
 Retake them whenever the UI changes noticeably.
 
 ## Cloud accounts later

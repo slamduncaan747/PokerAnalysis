@@ -1,6 +1,8 @@
-import { ArrowLeftRight, Cloud, CloudOff, Cpu, Crosshair, GraduationCap, LayoutDashboard, ListOrdered, Lock, RefreshCw, Upload } from 'lucide-react';
+import { ArrowLeftRight, Cloud, CloudOff, Cpu, Crosshair, GraduationCap, LayoutDashboard, ListOrdered, Lock, RefreshCw, Smartphone, Upload } from 'lucide-react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useCloud } from '../cloud/state.ts';
+import { setUiMode } from '../mobile/mode.ts';
+import { STAKES, stakeLabel, useSettings } from '../settings.ts';
 import { useStore } from '../store.ts';
 import { ProgressBar } from './ui.tsx';
 
@@ -57,6 +59,36 @@ function AccountChip({ compact = false }: { compact?: boolean }) {
   );
 }
 
+/** bb or money at a stake: applies to the replayer, coach panel and training. */
+export function UnitsPicker() {
+  const { units, stake, currency, handStakes, set } = useSettings();
+  const value = units === 'bb' ? 'bb' : handStakes ? 'real' : String(stake.bb);
+  return (
+    <label className="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-sm text-mute">
+      <span>Amounts</span>
+      <select
+        aria-label="Show amounts in"
+        value={value}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v === 'bb') set({ units: 'bb' });
+          else if (v === 'real') set({ units: 'money', handStakes: true });
+          else set({ units: 'money', handStakes: false, stake: STAKES.find((s) => String(s.bb) === v) ?? stake });
+        }}
+        className="max-w-[9rem] rounded-md border border-line bg-panel-2 px-1.5 py-1 text-xs text-ink outline-none focus:border-accent"
+      >
+        <option value="bb">Big blinds</option>
+        <option value="real">Each hand’s stakes</option>
+        {STAKES.map((s) => (
+          <option key={s.bb} value={String(s.bb)}>
+            As {stakeLabel(s, currency)}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 export default function Layout() {
   return (
     <div className="flex min-h-full">
@@ -78,6 +110,10 @@ export default function Layout() {
           </NavLink>
         ))}
         <div className="mt-auto flex flex-col gap-2">
+        <UnitsPicker />
+        <button onClick={() => setUiMode('mobile')} className="flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-mute hover:bg-panel-2 hover:text-ink">
+          <Smartphone size={18} /> <span>Phone app: puzzles &amp; Daily Hand</span>
+        </button>
         <AccountChip />
         <div className="rounded-lg border border-line bg-panel-2 p-3 text-[11px] leading-relaxed text-mute">
           <div className="mb-1 flex items-center gap-1.5 font-semibold text-ink">
