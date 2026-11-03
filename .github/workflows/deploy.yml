@@ -1,8 +1,10 @@
-name: Build & deploy
+name: Build & deploy to GitHub Pages
 
+# Builds the Vite app (tests first) and publishes dist/ to GitHub Pages.
+# Settings → Pages → Source must be "GitHub Actions".
 on:
   push:
-    branches: [main]
+    branches: [main, claude/confident-volta-9ayi4l]
   pull_request:
   workflow_dispatch:
 
@@ -11,9 +13,10 @@ permissions:
   pages: write
   id-token: write
 
+# One Pages deployment at a time; let an in-progress deployment finish.
 concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -27,14 +30,15 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - uses: actions/configure-pages@v5
+        if: github.event_name != 'pull_request'
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:
           path: dist
 
   deploy:
-    # Publishes the static site to GitHub Pages (Settings → Pages → Source: "GitHub Actions").
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:

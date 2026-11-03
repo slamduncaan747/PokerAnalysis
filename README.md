@@ -72,7 +72,7 @@ npm run build:solver  # rebuild the WebAssembly solver (needs Rust; output is co
 ## Deploy for free (GitHub Pages)
 
 1. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-2. Push to `main`. The workflow in `.github/workflows/deploy.yml` runs the tests, builds, and publishes.
+2. Push to `main` (or the `claude/confident-volta-9ayi4l` branch). The workflow in `.github/workflows/deploy.yml` runs the tests, builds, and publishes.
 
 The build uses relative paths + hash routing, so it also works on Netlify/Vercel/any static host
 or straight from the `dist/` folder.
