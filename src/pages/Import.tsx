@@ -137,6 +137,7 @@ export function ImportResult() {
 export default function Import() {
   const count = useStore((s) => s.hands.size);
   const reset = useStore((s) => s.reset);
+  const [confirming, setConfirming] = useState(false);
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <div>
@@ -168,16 +169,28 @@ export default function Import() {
           </p>
           <div className="mt-3 flex items-center justify-between text-sm">
             <span className="text-mute">{count.toLocaleString()} hands stored</span>
-            {count > 0 && (
-              <button
-                className="btn btn-ghost !py-1.5 text-loss"
-                onClick={() => {
-                  if (confirm('Delete all imported hands and analysis from this browser?')) reset();
-                }}
-              >
-                <Trash2 size={14} /> Clear data
-              </button>
-            )}
+            {count > 0 &&
+              (confirming ? (
+                <span className="flex items-center gap-2">
+                  <span className="text-xs text-mute">Delete all hands?</span>
+                  <button
+                    className="btn !bg-loss !py-1.5 text-white"
+                    onClick={async () => {
+                      await reset();
+                      setConfirming(false);
+                    }}
+                  >
+                    Delete
+                  </button>
+                  <button className="btn btn-ghost !py-1.5" onClick={() => setConfirming(false)}>
+                    Cancel
+                  </button>
+                </span>
+              ) : (
+                <button className="btn btn-ghost !py-1.5 text-loss" onClick={() => setConfirming(true)}>
+                  <Trash2 size={14} /> Clear data
+                </button>
+              ))}
           </div>
         </div>
       </div>

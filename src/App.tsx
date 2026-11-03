@@ -10,6 +10,7 @@ const HandReview = lazy(() => import('./pages/HandReview.tsx'));
 const Leaks = lazy(() => import('./pages/Leaks.tsx'));
 const Train = lazy(() => import('./pages/Train.tsx'));
 const TrainSession = lazy(() => import('./pages/TrainSession.tsx'));
+const SolverPage = lazy(() => import('./pages/SolverPage.tsx'));
 
 const Loading = () => <div className="text-sm text-mute">Loading…</div>;
 
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/leaks" element={<Leaks />} />
             <Route path="/train" element={<Train />} />
             <Route path="/train/session" element={<TrainSession />} />
+            <Route path="/solver" element={<SolverPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

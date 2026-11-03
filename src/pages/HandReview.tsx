@@ -1,5 +1,5 @@
 import { ArrowLeft, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, GraduationCap, Lightbulb } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import PokerTable from '../components/PokerTable.tsx';
 import { AccuracyRing, CardText, CLASS_META, ClassBadge, EvalBar, Pill } from '../components/ui.tsx';
@@ -10,6 +10,8 @@ import { buildSteps, tableAt } from '../lib/replay.ts';
 import type { Hand, Street } from '../lib/types.ts';
 import { useStore } from '../store.ts';
 import { useFilteredHands } from './Hands.tsx';
+
+const GtoPanel = lazy(() => import('../components/GtoPanel.tsx'));
 
 const fmt = (x: number) => `${x >= 0 ? '+' : ''}${Math.round(x * 100) / 100}`;
 
@@ -123,12 +125,17 @@ export default function HandReview() {
   const navigate = useNavigate();
   const steps = useMemo(() => (hand ? buildSteps(hand) : []), [hand]);
   const decByAction = useMemo(() => new Map((analysis?.decisions ?? []).map((d) => [d.actionIndex, d])), [analysis]);
+  const deepLink = params.get('a');
   const firstInteresting = useMemo(() => {
+    if (deepLink !== null) {
+      const k = steps.findIndex((s) => s.actionIndex === parseInt(deepLink));
+      if (k >= 0) return k;
+    }
     if (!analysis) return 0;
     const worst = [...analysis.decisions].filter((d) => !d.trivial).sort((a, b) => b.evLoss - a.evLoss)[0];
     if (worst && worst.evLoss > 0) return steps.findIndex((s) => s.actionIndex === worst.actionIndex);
     return 0;
-  }, [analysis, steps]);
+  }, [analysis, steps, deepLink]);
   const [step, setStep] = useState(0);
   useEffect(() => setStep(Math.max(0, firstInteresting)), [handId, firstInteresting]);
 
@@ -235,6 +242,7 @@ export default function HandReview() {
       </div>
 
       <div className="grid items-start gap-4 xl:grid-cols-[1fr_400px]">
+        <div className="flex min-w-0 flex-col gap-4">
         <div className="panel flex flex-col gap-4 p-4">
           <div className="flex items-stretch gap-3">
             <div className="hidden sm:block">
@@ -264,6 +272,18 @@ export default function HandReview() {
               <ChevronLast size={18} />
             </button>
           </div>
+        </div>
+        {curDecision && curDecision.street !== 'preflop' ? (
+          <Suspense fallback={null}>
+            <GtoPanel key={`${hand.id}-${curDecision.actionIndex}`} hand={hand} actionIndex={curDecision.actionIndex} decision={curDecision} />
+          </Suspense>
+        ) : (
+          analysis.decisions.some((d) => d.street !== 'preflop') && (
+            <div className="panel p-4 text-sm text-mute">
+              Step to one of your flop, turn or river decisions (badges in the move list) to run the <b className="text-ink">GTO solver</b> on it.
+            </div>
+          )
+        )}
         </div>
 
         <div className="flex flex-col gap-4">

@@ -16,7 +16,7 @@ export { accuracyFor, classifyPostflop, weightedAccuracy };
 
 const POST_ORDER: Position[] = ['SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'UTG+3', 'LJ', 'HJ', 'CO', 'BTN'];
 
-interface PState {
+export interface PState {
   name: string;
   pos: Position;
   stack: number; // chips behind
@@ -279,7 +279,7 @@ function lineTag(a: Action, raiseLevel: number, limpers: number): string {
 // Villain preflop ranges
 // ---------------------------------------------------------------------------
 
-function assignPreflopRange(
+export function assignPreflopRange(
   p: PState,
   a: Action,
   c: { raiseLevel: number; limpers: number; openerPos: Position | null; opener: string | null; threeBettor: string | null; P: Map<string, PState>; bb: number; tableSize: number },
@@ -342,7 +342,7 @@ function blendInPlace(r: Range, other: Range, w: number) {
 // Postflop range narrowing
 // ---------------------------------------------------------------------------
 
-function narrowRange(r: Range, bs: BoardStrength, type: string, sizeFrac: number, street: Street, facingBet: boolean) {
+export function narrowRange(r: Range, bs: BoardStrength, type: string, sizeFrac: number, street: Street, facingBet: boolean) {
   const before = Float32Array.from(r);
   const river = street === 'river';
   const s = Math.min(Math.max(sizeFrac, 0.15), 2);
@@ -387,7 +387,7 @@ function narrowRange(r: Range, bs: BoardStrength, type: string, sizeFrac: number
   if (tot < 3) r.set(before);
 }
 
-function rangeComposition(r: Range, bs: BoardStrength): Record<StrengthBucket | 'draw', number> {
+export function rangeComposition(r: Range, bs: BoardStrength): Record<StrengthBucket | 'draw', number> {
   const out = { nuts: 0, strong: 0, medium: 0, weak: 0, air: 0, draw: 0 };
   let tot = 0;
   for (let i = 0; i < 1326; i++) {
@@ -402,7 +402,7 @@ function rangeComposition(r: Range, bs: BoardStrength): Record<StrengthBucket | 
   return out;
 }
 
-function describeComposition(c: Record<StrengthBucket | 'draw', number>): string {
+export function describeComposition(c: Record<StrengthBucket | 'draw', number>): string {
   const pct = (x: number) => `${Math.round(x * 100)}%`;
   const parts: string[] = [];
   const value = c.nuts + c.strong;

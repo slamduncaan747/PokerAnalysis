@@ -195,3 +195,16 @@ function scaleSpec(spec: string, k: number): string {
   if (!spec) return spec;
   return [...parseRangeClasses(spec)].map(([c, w]) => `${c}:${(w * k).toFixed(2)}`).join(', ');
 }
+
+/** Range string (with weights) for one part of a chart — handy for solver presets. */
+export function chartRangeSpec(c: Chart, part: 'raise' | 'call' | 'play'): string {
+  const out: string[] = [];
+  const classes = new Set([...c.raiseW.keys(), ...c.callW.keys()]);
+  for (const cls of classes) {
+    const f = freqOf(c, cls);
+    const w = part === 'raise' ? f.raise : part === 'call' ? f.call : f.raise + f.call;
+    if (w >= 0.995) out.push(cls);
+    else if (w > 0.01) out.push(`${cls}:${Math.round(w * 100) / 100}`);
+  }
+  return out.join(',');
+}

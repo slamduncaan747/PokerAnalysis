@@ -29,6 +29,7 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+:root { color-scheme: dark; }
 html, body, #root { height: 100%; }
 body {
   background: var(--color-bg);

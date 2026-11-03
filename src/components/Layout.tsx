@@ -1,4 +1,4 @@
-import { Crosshair, GraduationCap, LayoutDashboard, ListOrdered, Lock, Upload } from 'lucide-react';
+import { Cpu, Crosshair, GraduationCap, LayoutDashboard, ListOrdered, Lock, Upload } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useStore } from '../store.ts';
 import { ProgressBar } from './ui.tsx';
@@ -8,6 +8,7 @@ const NAV = [
   { to: '/hands', label: 'Hands', icon: ListOrdered },
   { to: '/leaks', label: 'Leaks', icon: Crosshair },
   { to: '/train', label: 'Train', icon: GraduationCap },
+  { to: '/solver', label: 'Solver', icon: Cpu },
   { to: '/import', label: 'Import', icon: Upload },
 ];
 
@@ -64,6 +65,17 @@ export default function Layout() {
             <Lock size={12} /> 100% private
           </div>
           Hand histories are analyzed in your browser and never leave your device.
+          <div className="mt-2 border-t border-line pt-2 text-dim">
+            Free software (AGPL-3.0) ·{' '}
+            <a className="underline hover:text-mute" href="https://github.com/slamduncaan747/PokerAnalysis" target="_blank" rel="noreferrer">
+              source code
+            </a>
+            <br />
+            Solver:{' '}
+            <a className="underline hover:text-mute" href="https://github.com/b-inary/postflop-solver" target="_blank" rel="noreferrer">
+              postflop-solver
+            </a>
+          </div>
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -74,7 +86,7 @@ export default function Layout() {
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 pb-24 md:px-8 md:pb-10">
           <Outlet />
         </main>
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-line bg-panel/95 backdrop-blur">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 grid grid-cols-6 border-t border-line bg-panel/95 backdrop-blur">
           {NAV.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[10px] ${isActive ? 'text-accent' : 'text-mute'}`}>
               <Icon size={18} />
