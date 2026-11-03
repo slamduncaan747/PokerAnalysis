@@ -43,6 +43,8 @@ export class HandBuilder {
   uncalled: Record<string, number> = {};
   rake = 0;
   totalPot = 0;
+  /** Money added to the pot by the site (CoinPoker "splash"). */
+  splash = 0;
   raw = '';
 
   addCollected(name: string, amt: number) {
@@ -172,6 +174,14 @@ export class HandBuilder {
         : this.shown[s.name]?.length === 2 ? (this.shown[s.name] as [Card, Card]) : undefined,
     }));
 
+    // CoinPoker leaves the splash out of the winners' "collected" lines (the stack in the next hand
+    // shows the winner received it), so credit it to the winners in proportion to what they collected.
+    if (this.splash > 0) {
+      const won = Object.entries(this.collected).filter(([, v]) => v > 0);
+      const tot = won.reduce((s, [, v]) => s + v, 0);
+      for (const [name, v] of won) this.collected[name] = round2(v + (this.splash * v) / tot);
+    }
+
     const heroIn = totalIn[this.hero] ?? 0;
     const heroBack = (this.collected[this.hero] ?? 0) + (this.uncalled[this.hero] ?? 0);
     const heroNet = round2(heroBack - heroIn);
@@ -182,7 +192,7 @@ export class HandBuilder {
     if (!totalPot) {
       const sumIn = Object.values(totalIn).reduce((a, b) => a + b, 0);
       const sumUncalled = Object.values(this.uncalled).reduce((a, b) => a + b, 0);
-      totalPot = round2(sumIn - sumUncalled);
+      totalPot = round2(sumIn - sumUncalled + this.splash);
     }
     let rake = this.rake;
     if (!rake && this.site === 'Ignition') {
@@ -212,6 +222,7 @@ export class HandBuilder {
       uncalled: this.uncalled,
       rake,
       totalPot,
+      splash: this.splash || undefined,
       heroNet,
       wentToShowdown,
       raw: this.raw,

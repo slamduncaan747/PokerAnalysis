@@ -59,7 +59,7 @@ export function tableAt(hand: Hand, uptoActionIndex: number | 'final'): TableSta
   }));
   const by = new Map(seats.map((s) => [s.name, s]));
   let street: Street = 'preflop';
-  let pot = 0;
+  let pot = hand.splash ?? 0;
   const end = uptoActionIndex === 'final' ? hand.actions.length - 1 : uptoActionIndex;
   let actor: string | undefined;
   for (let i = 0; i <= end && i < hand.actions.length; i++) {

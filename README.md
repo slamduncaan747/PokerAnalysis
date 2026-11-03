@@ -13,7 +13,7 @@ Netlify, Vercel, or just `npm run dev`).
 
 | | |
 |---|---|
-| **Import** | Drag & drop `.txt` hand histories (or paste). Duplicates skipped. Supports PokerStars (cash, Zoom, MTT/SNG), GGPoker/Natural8 exports, ACR/WPN, Winamax, Ignition/Bovada/Bodog, and most PokerStars-style formats. NLHE only. |
+| **Import** | Drag & drop `.txt` hand histories or a `.zip` download (or paste). UTF-8 and UTF-16 files, duplicates skipped. Supports PokerStars (cash, Zoom, MTT/SNG), GGPoker/Natural8 exports, **CoinPoker** (USDT ₮ amounts, `ALLIN`/`STRADDLE`/`RETURN` lines, splash pots, run-it-twice), ACR/WPN, Winamax, Ignition/Bovada/Bodog, and most PokerStars-style formats. NLHE only. |
 | **Dashboard** | Win rate (bb/100), all-in EV ("luck"), EV lost to mistakes, accuracy ring + move-classification breakdown, results graph (net / all-in EV / showdown / non-showdown), win rate by position, accuracy & EV lost by street, costliest hands. |
 | **Stats vs. winning ranges** | VPIP, PFR, 3-bet, fold to 3-bet, steal, BB fold vs steal, open-limp, c-bet, fold to c-bet, WTSD, W$SD, WWSF, AF/AFq — each plotted against a typical winning-reg band with advice when you're outside it. |
 | **Leak finder** | Mistakes grouped into ~20 leak types (calling down too light, missing value, over-folding the BB, flatting 3-bet hands, bluffing into strength, …), ranked by bb lost, each with an explanation, how-to-fix, and links to the exact hands. |

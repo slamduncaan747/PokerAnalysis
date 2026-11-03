@@ -54,7 +54,7 @@ export function analyzeHand(hand: Hand, opts: AnalyzeOptions = {}): HandAnalysis
 
   // Street/pot tracking
   let street: Street = 'preflop';
-  let pot = 0;
+  let pot = hand.splash ?? 0; // site-added money (CoinPoker splash) is dead money in the pot
   let currentBet = 0;
   let lastRaiseSize = bb;
   let raiseLevel = 0;

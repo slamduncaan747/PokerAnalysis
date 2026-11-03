@@ -58,6 +58,8 @@ export interface Hand {
   uncalled: Record<string, number>;
   rake: number;
   totalPot: number;
+  /** Money the site added to the pot (CoinPoker splash), already counted in totalPot. */
+  splash?: number;
   /** Hero's net result in chips. */
   heroNet: number;
   /** True if hero reached showdown (cards were compared). */

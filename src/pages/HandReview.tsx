@@ -17,7 +17,7 @@ const fmt = (x: number) => `${x >= 0 ? '+' : ''}${Math.round(x * 100) / 100}`;
 
 function moneyStr(hand: Hand, chips: number) {
   if (!hand.currency) return `${Math.round(chips).toLocaleString()} chips`;
-  const sym = hand.currency === 'EUR' ? '€' : hand.currency === 'GBP' ? '£' : '$';
+  const sym = hand.currency === 'EUR' ? '€' : hand.currency === 'GBP' ? '£' : hand.currency === 'USDT' ? '₮' : '$';
   return `${chips < 0 ? '−' : ''}${sym}${Math.abs(chips).toFixed(2)}`;
 }
 
@@ -228,6 +228,7 @@ export default function HandReview() {
             </div>
             <div className="text-xs text-mute">
               {hand.site} · {stakes} · {hand.date.replace('T', ' ')} · {hand.table} · #{hand.id.split('-').slice(1).join('-')}
+              {hand.splash ? ` · splash pot +${moneyStr(hand, hand.splash)}` : ''}
             </div>
           </div>
         </div>

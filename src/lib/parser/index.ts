@@ -10,6 +10,7 @@ import { HandBuilder } from './builder.ts';
  *  - GGPoker / Natural8 exports ("Poker Hand #...")
  *  - Winning Poker Network / ACR ("Game Hand #...")
  *  - Winamax
+ *  - CoinPoker (USDT "₮" amounts, ALLIN / STRADDLE / RETURN lines, splash pots, run it twice)
  *  - Ignition / Bovada / Bodog
  *  - Anything else that follows the PokerStars text layout closely.
  */
@@ -19,11 +20,12 @@ const HEADER_RES: RegExp[] = [
   /^Poker Hand #/,
   /^Game Hand #/,
   /^Winamax Poker - /,
+  /^CoinPoker Hand #/,
   /^(?:Ignition|Bovada|Bodog) (?:Hand|Game) #/,
   /^Hand #\d+/, // generic stars-like
 ];
 
-const AMT = String.raw`[$€£¥₹]?\s?([\d,]+(?:\.\d+)?)\s?(?:[$€£¥₹]|USD|EUR|GBP)?`;
+const AMT = String.raw`[$€£¥₹₮]?\s?([\d,]+(?:\.\d+)?)\s?(?:[$€£¥₹₮]|USDT|USD|EUR|GBP)?`;
 
 export function parseNumber(s: string): number {
   const cleaned = s.replace(/[^\d.,-]/g, '');
@@ -53,7 +55,7 @@ function isNLHE(header: string): boolean {
   const h = header.toLowerCase();
   if (/omaha|stud|razz|draw|badugi|short ?deck|6\+|courchevel|plo/.test(h)) return false;
   if (/pot limit|pot-limit|fixed limit|\blimit\b/.test(h.replace(/no limit|no-limit|nolimit/g, ''))) return false;
-  return /hold'?em|holdem/.test(h);
+  return /hold'?em|holdem|\bnlh\b|\bnlhe\b/.test(h);
 }
 
 function parseDate(s: string | undefined): string {
@@ -65,6 +67,7 @@ function parseDate(s: string | undefined): string {
 }
 
 function currencyOf(s: string): string {
+  if (s.includes('₮') || /USDT/.test(s)) return 'USDT';
   if (s.includes('€')) return 'EUR';
   if (s.includes('£')) return 'GBP';
   if (s.includes('$') || /USD/.test(s)) return 'USD';
@@ -113,6 +116,9 @@ function parseStarsHeader(b: HandBuilder, header: string) {
   } else if ((m = header.match(/^Game Hand #(\d+)/))) {
     b.site = 'ACR';
     b.id = m[1];
+  } else if ((m = header.match(/^CoinPoker Hand #(\d+)/))) {
+    b.site = 'CoinPoker';
+    b.id = m[1];
   } else if ((m = header.match(/HandId: #([\d-]+)/))) {
     b.site = 'Winamax';
     b.id = m[1];
@@ -129,8 +135,8 @@ function parseStarsHeader(b: HandBuilder, header: string) {
   }
   // Blinds: "(0.25/0.50" or "($0.25/$0.50" or "Level IV (50/100)" or "Level10(200/400(50))" or "- $0.01/$0.02 -" or "(0.01€/0.02€)"
   const bm =
-    header.match(/\(\s*[$€£]?([\d.,]+)\s?[€$£]?\s*\/\s*[$€£]?([\d.,]+)\s?[€$£]?(?:\s*\(([\d.,]+)\))?/) ??
-    header.match(/-\s*[$€£]?([\d.,]+)\s?[€$£]?\/[$€£]?([\d.,]+)\s?[€$£]?\s*-/);
+    header.match(/\(\s*[$€£¥₹₮]?([\d.,]+)\s?[$€£¥₹₮]?\s*\/\s*[$€£¥₹₮]?([\d.,]+)\s?[$€£¥₹₮]?(?:\s*\(([\d.,]+)\))?/) ??
+    header.match(/-\s*[$€£¥₹₮]?([\d.,]+)\s?[$€£¥₹₮]?\/[$€£¥₹₮]?([\d.,]+)\s?[$€£¥₹₮]?\s*-/);
   if (bm) {
     b.sb = parseNumber(bm[1]);
     b.bb = parseNumber(bm[2]);
@@ -197,7 +203,7 @@ function parseStarsFamily(chunk: string): HandBuilder | null {
         if (bt) b.buttonSeat = parseInt(bt[1]);
         continue;
       }
-      if ((m = line.match(/^Seat (\d+): (.+?) \(\s*[$€£]?\s?([\d.,]+)\s?[€$£]?(?: in chips)?(?:[,;][^)]*)?\)(.*)$/))) {
+      if ((m = line.match(/^Seat (\d+): (.+?) \(\s*[$€£¥₹₮]?\s?([\d.,]+)\s?[$€£¥₹₮]?(?: in chips)?(?:[,;][^)]*)?\)(.*)$/))) {
         b.seats.push({
           seat: parseInt(m[1]),
           name: m[2],
@@ -212,10 +218,13 @@ function parseStarsFamily(chunk: string): HandBuilder | null {
     }
 
     if (section === 'summary') {
-      if ((m = line.match(/^Total pot\s*[$€£]?\s?([\d.,]+)/i))) {
+      if ((m = line.match(/^Total pot\s*[$€£¥₹₮]?\s?([\d.,]+)/i))) {
         b.totalPot = parseNumber(m[1]);
-        const rk = line.match(/Rake\s*[$€£]?\s?([\d.,]+)/i);
+        const rk = line.match(/Rake\s*[$€£¥₹₮]?\s?([\d.,]+)/i);
         if (rk) b.rake = parseNumber(rk[1]);
+        // CoinPoker charges a separate "Splash Fee" on top of rake.
+        const sf = line.match(/Splash Fee\s*[$€£¥₹₮]?\s?([\d.,]+)/i);
+        if (sf) b.rake += parseNumber(sf[1]);
         continue;
       }
       if ((m = line.match(/^Seat \d+: (.+?) (?:\([^)]*\) )*(?:showed|mucked) \[([^\]]+)\]/))) {
@@ -225,6 +234,11 @@ function parseStarsFamily(chunk: string): HandBuilder | null {
       continue;
     }
 
+    // CoinPoker splash: money the site adds to the pot before the hand starts.
+    if ((m = line.match(/^SPLASH dropped\s*[$€£¥₹₮]?\s?([\d.,]+)/i))) {
+      b.splash += parseNumber(m[1]);
+      continue;
+    }
     // Dealt to
     if ((m = line.match(/^Dealt to (.+?) \[([^\]]+)\]/))) {
       const nm = names.find((n) => n === m![1]) ?? m[1];
@@ -235,7 +249,7 @@ function parseStarsFamily(chunk: string): HandBuilder | null {
       }
       continue;
     }
-    if ((m = line.match(/^Uncalled bet \(\s*[$€£]?\s?([\d.,]+)\s?[€$£]?\s*\) returned to (.+)$/))) {
+    if ((m = line.match(/^Uncalled bet \(\s*[$€£¥₹₮]?\s?([\d.,]+)\s?[$€£¥₹₮]?\s*\) returned to (.+)$/))) {
       const nm = m[2].trim();
       b.uncalled[nm] = (b.uncalled[nm] ?? 0) + parseNumber(m[1]);
       continue;
@@ -247,7 +261,7 @@ function parseStarsFamily(chunk: string): HandBuilder | null {
     const rest = rest0.trim();
     const allIn = /all-in|all in/i.test(rest);
 
-    if ((m = rest.match(new RegExp(`^posts (?:the |a )?(small & big blinds|small blind|big blind|straddle|dead small blind|dead big blind|dead blind|ante|bring-in|missed blind)\\s*${AMT}`, 'i')))) {
+    if ((m = rest.match(new RegExp(`^posts (?:the |a )?(small & big blinds|small blind|auto big blind|big blind|straddle|dead small blind|dead big blind|dead blind|ante|bring-in|missed blind)\\s*${AMT}`, 'i')))) {
       const kind = m[1].toLowerCase();
       const amount = parseNumber(m[2]);
       if (kind === 'small & big blinds') {
@@ -258,6 +272,9 @@ function parseStarsFamily(chunk: string): HandBuilder | null {
       } else if (kind === 'big blind') {
         if (!b.bb) b.bb = amount;
         b.events.push({ kind: 'post', player, post: 'bb', amount, allIn });
+      } else if (kind === 'auto big blind') {
+        // A new player's out-of-turn big blind (CoinPoker): live money, not the BB position.
+        b.events.push({ kind: 'post', player, post: 'straddle', amount, allIn });
       } else if (kind === 'straddle') {
         b.events.push({ kind: 'post', player, post: 'straddle', amount, allIn });
       } else if (kind === 'ante') {
@@ -266,6 +283,20 @@ function parseStarsFamily(chunk: string): HandBuilder | null {
       } else {
         b.events.push({ kind: 'post', player, post: 'dead', amount, allIn });
       }
+      continue;
+    }
+    // CoinPoker's own action lines
+    if ((m = rest.match(new RegExp(`^ALLIN\\s*${AMT}`)))) {
+      // Gives only the chips added; bet / call / raise is inferred from the street.
+      b.events.push({ kind: 'allin', player, amount: parseNumber(m[1]) });
+      continue;
+    }
+    if ((m = rest.match(new RegExp(`^STRADDLE\\s*${AMT}`)))) {
+      b.events.push({ kind: 'post', player, post: 'straddle', amount: parseNumber(m[1]) });
+      continue;
+    }
+    if ((m = rest.match(new RegExp(`^RETURN\\s*${AMT}`)))) {
+      b.uncalled[player] = (b.uncalled[player] ?? 0) + parseNumber(m[1]);
       continue;
     }
     if (/^folds/i.test(rest)) {
@@ -300,7 +331,7 @@ function parseStarsFamily(chunk: string): HandBuilder | null {
   }
 
   if (!b.bb) {
-    const bm = headerExtra.match(/\(\s*[$€£]?([\d.,]+)\s?[€$£]?\s*\/\s*[$€£]?([\d.,]+)/);
+    const bm = headerExtra.match(/\(\s*[$€£¥₹₮]?([\d.,]+)\s?[$€£¥₹₮]?\s*\/\s*[$€£¥₹₮]?([\d.,]+)/);
     if (bm) {
       b.sb = parseNumber(bm[1]);
       b.bb = parseNumber(bm[2]);

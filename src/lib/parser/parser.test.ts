@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cardsToString } from '../cards.ts';
 import { parseHandHistories, splitHands } from './index.ts';
-import { ACR_CASH, GG_CASH, IGNITION_CASH, STARS_CASH, STARS_TOURNEY, WINAMAX_CASH } from './fixtures.ts';
+import { ACR_CASH, COINPOKER_CASH, GG_CASH, IGNITION_CASH, STARS_CASH, STARS_TOURNEY, WINAMAX_CASH } from './fixtures.ts';
 
 describe('splitHands', () => {
   it('splits a multi-hand file', () => {
@@ -120,6 +120,64 @@ describe('Ignition', () => {
     expect(cardsToString(h.heroCards)).toBe('Th Qh');
     expect(h.heroNet).toBeCloseTo(1.96, 2);
     expect(h.rake).toBeCloseTo(0.14, 2);
+  });
+});
+
+describe('CoinPoker', () => {
+  const r = parseHandHistories(COINPOKER_CASH);
+  const [splash, straddle, rit] = r.hands;
+  const balance = (h: (typeof r.hands)[number]) => {
+    const putIn = h.actions.reduce((s, a) => s + a.amount, 0);
+    const unc = Object.values(h.uncalled).reduce((s, x) => s + x, 0);
+    const coll = Object.values(h.collected).reduce((s, x) => s + x, 0);
+    return { pot: putIn - unc + (h.splash ?? 0), paid: coll + h.rake };
+  };
+  it('reads NLH hands with USDT amounts and skips other games', () => {
+    expect(r.errors).toEqual([]);
+    expect(r.hands).toHaveLength(3);
+    expect(r.skipped).toBe(1); // the PLO hand
+    expect(splash.site).toBe('CoinPoker');
+    expect(splash.currency).toBe('USDT');
+    expect(splash.sb).toBe(0.1);
+    expect(splash.bb).toBe(0.25);
+    expect(splash.hero).toBe('Hero');
+    expect(cardsToString(splash.heroCards)).toBe('Ah Ad');
+    expect(splash.players.find((p) => p.isHero)?.position).toBe('CO');
+  });
+  it('turns ALLIN (chips added) into the right bet/call/raise', () => {
+    const ai = splash.actions.find((a) => a.player === '0a1b2c3d' && a.allIn && a.street === 'flop')!;
+    expect(ai.type).toBe('raise');
+    expect(ai.amount).toBeCloseTo(7.37, 5);
+    expect(ai.toAmount).toBeCloseTo(7.37, 5);
+    const call = splash.actions.find((a) => a.player === 'Hero' && a.street === 'flop' && a.type === 'call')!;
+    expect(call.toAmount).toBeCloseTo(7.37, 5);
+  });
+  it('credits the splash to the winner and balances the money', () => {
+    expect(splash.splash).toBe(1);
+    expect(splash.rake).toBeCloseTo(0.62, 5);
+    expect(splash.collected.Hero).toBeCloseTo(16.48, 2);
+    expect(splash.heroNet).toBeCloseTo(8.48, 2);
+    for (const h of r.hands) {
+      const b = balance(h);
+      expect(b.pot).toBeCloseTo(h.totalPot, 2);
+      expect(b.paid).toBeCloseTo(h.totalPot, 2);
+    }
+  });
+  it('handles STRADDLE, RETURN and auto big blinds', () => {
+    const st = straddle.actions.find((a) => a.player === '11aa22bb' && a.type === 'post')!;
+    expect(st.postKind).toBe('straddle');
+    expect(st.amount).toBe(0.5);
+    expect(straddle.uncalled['11aa22bb']).toBe(0.25);
+    expect(straddle.actions.find((a) => a.player === '33cc44dd' && a.type === 'post')?.amount).toBe(0.25);
+    expect(straddle.players.find((p) => p.name === '99cc00dd')?.position).toBe('BB');
+    expect(straddle.heroNet).toBe(0);
+  });
+  it('handles run it twice: first board, both payouts', () => {
+    expect(cardsToString(rit.board)).toBe('Ah 9c 4d 2s 8h');
+    expect(rit.collected.Hero).toBeCloseTo(19.55, 2);
+    expect(rit.heroNet).toBeCloseTo(-0.45, 2);
+    expect(rit.wentToShowdown).toBe(true);
+    expect(rit.players.find((p) => p.name === '77aa88bb')?.cards).toBeDefined();
   });
 });
 

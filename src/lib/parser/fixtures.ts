@@ -226,3 +226,134 @@ Big Blind [ME] : Hand result $3.71
 Total Pot($3.85)
 Board [Qs Ts 4s Ac 5d]
 `;
+
+// CoinPoker: PokerStars-like layout with USDT ("₮") amounts and its own ALLIN / STRADDLE /
+// RETURN / SPLASH / auto-big-blind / run-it-twice lines. Opponent names are per-hand hashes.
+export const COINPOKER_CASH = `CoinPoker Hand #170000000001: NLH (₮0.10/₮0.25) 2026/10/20 21:00:00 CET
+Table '300001' 6-max Seat #3 is the button
+Seat 1: a1b2c3d4 (₮25 in chips)
+Seat 2: Hero (₮25 in chips)
+Seat 3: e5f6a7b8 (₮40 in chips)
+Seat 4: c9d0e1f2 (₮25 in chips)
+Seat 5: 0a1b2c3d (₮8 in chips)
+SPLASH dropped ₮1
+c9d0e1f2: posts small blind ₮0.10
+0a1b2c3d: posts big blind ₮0.25
+*** HOLE CARDS ***
+Dealt to a1b2c3d4
+Dealt to Hero [Ah Ad]
+Dealt to e5f6a7b8
+Dealt to c9d0e1f2
+Dealt to 0a1b2c3d
+a1b2c3d4: folds
+Hero: raises ₮0.38 to ₮0.63
+e5f6a7b8: folds
+c9d0e1f2: folds
+0a1b2c3d: calls ₮0.38
+*** FLOP *** [Kd 7c 2s]
+0a1b2c3d: checks
+Hero: bets ₮0.90
+0a1b2c3d: ALLIN ₮7.37
+Hero: calls ₮6.47
+*** TURN *** [Kd 7c 2s] [9h]
+*** RIVER *** [Kd 7c 2s 9h] [4c]
+*** SHOWDOWN ***
+Hero: shows [Ah Ad] (One Pair)
+Hero collected ₮15.48 from pot
+0a1b2c3d: shows [Kc Qh] (One Pair)
+*** SUMMARY ***
+Total pot ₮17.10 | Rake ₮0.61 | Splash Fee ₮0.01
+Hand was run once
+Board [ Kd 7c 2s 9h 4c ]
+Game ended: 2026/10/20 21:01:12 CET
+Seat 1: a1b2c3d4 folded before Flop (didn't bet)
+Seat 2: Hero showed [Ah Ad] and won (₮15.48) with One Pair
+Seat 3: e5f6a7b8 folded before Flop (didn't bet)
+Seat 4: c9d0e1f2 folded before Flop
+Seat 5: 0a1b2c3d showed [Kc Qh] and lost with One Pair
+
+
+CoinPoker Hand #170000000002: NLH (₮0.10/₮0.25) 2026/10/20 21:02:00 CET
+Table '300001' 6-max Seat #4 is the button
+Seat 1: 11aa22bb (₮25 in chips)
+Seat 2: Hero (₮33.48 in chips)
+Seat 3: 33cc44dd (₮40 in chips)
+Seat 4: 55ee66ff (₮25 in chips)
+Seat 5: 77aa88bb (₮20 in chips)
+Seat 6: 99cc00dd (₮25 in chips)
+77aa88bb: posts small blind ₮0.10
+99cc00dd: posts big blind ₮0.25
+33cc44dd: posts auto big blind ₮0.25
+*** HOLE CARDS ***
+Dealt to 11aa22bb
+Dealt to Hero [7c 2d]
+Dealt to 33cc44dd
+Dealt to 55ee66ff
+Dealt to 77aa88bb
+Dealt to 99cc00dd
+11aa22bb: STRADDLE ₮0.50
+Hero: folds
+33cc44dd: folds
+55ee66ff: folds
+77aa88bb: folds
+99cc00dd: folds
+11aa22bb: RETURN ₮0.25
+*** SHOWDOWN ***
+11aa22bb collected ₮0.85 from pot
+*** SUMMARY ***
+Total pot ₮0.85 | Rake ₮0 | Splash Fee ₮0
+Hand was run once
+Board [  ]
+Game ended: 2026/10/20 21:02:20 CET
+Seat 1: 11aa22bb won (₮0.85)
+Seat 2: Hero folded before Flop (didn't bet)
+
+
+CoinPoker Hand #170000000003: NLH (₮0.10/₮0.25) 2026/10/20 21:04:00 CET
+Table '300001' 6-max Seat #5 is the button
+Seat 2: Hero (₮33.48 in chips)
+Seat 3: 33cc44dd (₮40 in chips)
+Seat 5: 77aa88bb (₮20 in chips)
+Seat 6: 99cc00dd (₮25 in chips)
+99cc00dd: posts small blind ₮0.10
+Hero: posts big blind ₮0.25
+*** HOLE CARDS ***
+Dealt to Hero [Qs Qd]
+Dealt to 33cc44dd
+Dealt to 77aa88bb
+Dealt to 99cc00dd
+33cc44dd: folds
+77aa88bb: raises ₮0.38 to ₮0.63
+99cc00dd: folds
+Hero: raises ₮1.87 to ₮2.50
+77aa88bb: ALLIN ₮19.37
+Hero: calls ₮17.50
+*** FIRST FLOP *** [Ah 9c 4d]
+*** FIRST TURN *** [Ah 9c 4d] [2s]
+*** FIRST RIVER *** [Ah 9c 4d 2s] [8h]
+*** SECOND FLOP *** [Js 6h 3c]
+*** SECOND TURN *** [Js 6h 3c] [5d]
+*** SECOND RIVER *** [Js 6h 3c 5d] [Tc]
+*** FIRST SHOWDOWN ***
+77aa88bb: shows [Ac Kd] (One Pair)
+77aa88bb collected ₮19.54 from pot
+Hero: shows [Qs Qd] (One Pair)
+*** SECOND SHOWDOWN ***
+Hero: shows [Qs Qd] (One Pair)
+Hero collected ₮19.55 from pot
+77aa88bb: shows [Ac Kd] (High Card)
+*** SUMMARY ***
+Total pot ₮40.10 | Rake ₮1 | Splash Fee ₮0.01
+Hand was run two times
+FIRST Board [ Ah 9c 4d 2s 8h ]
+SECOND Board [ Js 6h 3c 5d Tc ]
+Game ended: 2026/10/20 21:05:02 CET
+Seat 2: Hero showed [Qs Qd] and lost with One Pair, and won (₮19.55) with One Pair
+Seat 5: 77aa88bb showed [Ac Kd] and won (₮19.54) with One Pair, and lost with High Card
+
+
+CoinPoker Hand #170000000004: PLO (₮0.10/₮0.25) 2026/10/20 21:06:00 CET
+Table '300002' 6-max Seat #1 is the button
+Seat 1: Hero (₮25 in chips)
+Seat 2: ab12cd34 (₮25 in chips)
+`;

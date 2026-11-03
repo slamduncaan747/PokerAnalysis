@@ -1,14 +1,12 @@
 import { AlertTriangle, CheckCircle2, ClipboardPaste, FileText, Lock, Sparkles, Trash2, UploadCloud } from 'lucide-react';
 import { useRef, useState, type DragEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { readHandFiles } from '../lib/files.ts';
 import { useStore } from '../store.ts';
 
-const SITES = ['PokerStars', 'GGPoker / Natural8', 'ACR / WPN', 'Winamax', 'Ignition / Bovada', 'Most Stars-style exports'];
+const SITES = ['PokerStars', 'GGPoker / Natural8', 'CoinPoker', 'ACR / WPN', 'Winamax', 'Ignition / Bovada', 'Most Stars-style exports'];
 
-async function readFiles(list: FileList | File[]): Promise<{ name: string; text: string }[]> {
-  const files = [...list].filter((f) => /\.(txt|log|hh|xml)$/i.test(f.name) || f.type.startsWith('text/') || !f.type);
-  return Promise.all(files.map(async (f) => ({ name: f.name, text: await f.text() })));
-}
+const readFiles = readHandFiles;
 
 export function DropZone({ compact = false }: { compact?: boolean }) {
   const importFiles = useStore((s) => s.importFiles);
@@ -53,13 +51,13 @@ export function DropZone({ compact = false }: { compact?: boolean }) {
         <UploadCloud size={compact ? 28 : 40} className="text-accent" />
         <div>
           <div className="font-semibold">{busy ? 'Working…' : 'Drop hand history files here'}</div>
-          <div className="text-sm text-mute">or click to choose .txt files — you can select a whole folder's worth at once</div>
+          <div className="text-sm text-mute">or click to choose .txt or .zip files — you can select a whole folder's worth at once</div>
         </div>
         <input
           ref={inputRef}
           type="file"
           multiple
-          accept=".txt,.log,.hh,text/plain"
+          accept=".txt,.log,.hh,.zip,text/plain,application/zip"
           className="hidden"
           onChange={async (e) => {
             if (e.target.files) await go(await readFiles(e.target.files));
@@ -158,7 +156,10 @@ export default function Import() {
               <li key={s}>• {s}</li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-dim">No-Limit Hold'em cash games and tournaments. Other games are skipped.</p>
+          <p className="mt-2 text-xs text-dim">
+            No-Limit Hold'em cash games and tournaments; other games are skipped. Plain .txt files or a .zip download both work. CoinPoker's
+            USDT (₮) amounts, straddles, splash pots and run-it-twice hands are supported.
+          </p>
         </div>
         <div className="panel p-4">
           <div className="mb-2 flex items-center gap-2 font-semibold">

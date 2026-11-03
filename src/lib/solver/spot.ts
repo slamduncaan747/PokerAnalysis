@@ -48,7 +48,7 @@ export function buildSolverSpot(hand: Hand, actionIndex: number): { spot?: Solve
     P.set(p.name, { name: p.name, pos: p.position, stack: p.stack, commit: 0, totalIn: 0, folded: false, allIn: false, isHero: p.isHero, range: rangeFromSpec('any'), pfLine: [] });
 
   let street: Street = 'preflop';
-  let pot = 0;
+  let pot = hand.splash ?? 0;
   let currentBet = 0;
   let raiseLevel = 0;
   let limpers = 0;
