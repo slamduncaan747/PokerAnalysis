@@ -1,3 +1,7 @@
+import '@fontsource/instrument-serif/400.css';
+import '@fontsource/instrument-serif/400-italic.css';
+import '@fontsource-variable/geist';
+import '@fontsource-variable/geist-mono';
 import { CalendarDays, Puzzle, Target, UserRound } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { HashRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
@@ -36,12 +40,13 @@ function TabBar() {
             end={end}
             replace
             onClick={() => haptic.tap()}
-            className={({ isActive }) => `m-tap flex flex-1 flex-col items-center gap-0.5 pt-2 pb-1.5 text-[10.5px] font-semibold ${isActive ? 'text-accent' : 'text-[#8b93a3]'}`}
+            className={({ isActive }) => `m-tap relative flex flex-1 flex-col items-center gap-1 pt-2.5 pb-1.5 ${isActive ? 'text-[var(--paper)]' : 'text-[var(--dim)]'}`}
           >
             {({ isActive }) => (
               <>
-                <Icon size={25} strokeWidth={isActive ? 2.4 : 1.9} />
-                {label}
+                <Icon size={23} strokeWidth={isActive ? 2 : 1.6} />
+                <span className="m-mono text-[9.5px] tracking-[.1em] uppercase">{label}</span>
+                <span className="absolute top-0 h-[2px] w-6 rounded-b-full bg-[var(--signal)] transition-opacity duration-300" style={{ opacity: isActive ? 1 : 0 }} />
               </>
             )}
           </NavLink>
@@ -87,7 +92,7 @@ export default function MobileApp() {
     return () => clearTimeout(t);
   }, [init, ensureBank]);
   return (
-    <div className="m-app">
+    <div className="m-app m-grain">
       <HashRouter>
         <Routes>
           <Route element={<Tabs />}>

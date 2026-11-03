@@ -17,8 +17,8 @@ if (Capacitor.isNativePlatform()) {
 const mode = uiMode();
 const Root = mode === 'mobile' ? lazy(() => import('./mobile/MobileApp.tsx')) : lazy(() => import('./App.tsx'));
 if (mode === 'mobile') {
-  document.documentElement.style.background = '#08090c';
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#08090c');
+  document.documentElement.style.background = '#0d0d0b';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0d0d0b');
 }
 
 createRoot(document.getElementById('root')!).render(

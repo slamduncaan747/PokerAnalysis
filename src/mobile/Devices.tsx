@@ -71,11 +71,11 @@ export default function Devices() {
 
   const code = normalizeCode(typed);
   return (
-    <Screen title="Sync & devices" back>
+    <Screen title={<>Sync <em className="text-[var(--signal)]">&amp;</em> devices</>} back>
       <div className="m-card m-in p-5">
-        <div className="text-[17px] font-bold">Receive hands from your computer</div>
-        <ol className="mt-2 flex flex-col gap-1 text-[14.5px] text-mute">
-          <li>1. On your computer, open Leakfinder → <b className="text-ink">Sync &amp; devices</b> → <b className="text-ink">Show a code</b>.</li>
+        <div className="m-serif text-[28px] leading-[1.02]">Send hands from your computer.</div>
+        <ol className="mt-2 flex flex-col gap-1 text-[14.5px] text-[var(--mute)]">
+          <li>1. On your computer, open Leakfinder → <b className="text-[var(--text)]">Sync &amp; devices</b> → <b className="text-[var(--text)]">Show a code</b>.</li>
           <li>2. Type the code here. Hands and progress sync both ways, directly — no account.</li>
         </ol>
 
@@ -100,41 +100,41 @@ export default function Devices() {
                 haptic.tap();
               }}
               placeholder="ABC 123"
-              className="m-num h-[68px] w-full rounded-[18px] border border-white/10 bg-black/30 text-center font-mono text-[34px] font-extrabold tracking-[0.25em] text-ink uppercase outline-none placeholder:text-white/15 focus:border-accent"
+              className="m-num h-[68px] w-full rounded-[18px] border border-[var(--line-2)] bg-[var(--ink)] text-center font-mono text-[34px] font-extrabold tracking-[0.25em] text-[var(--text)] uppercase outline-none placeholder:text-white/15 focus:border-[var(--signal)]"
             />
             <PrimaryButton disabled={code.length !== 6}>Connect</PrimaryButton>
-            {phase.k === 'error' && <div className="rounded-[14px] bg-loss/10 px-3 py-2 text-[14px] text-loss">{phase.message}</div>}
-            <button type="button" className="m-tap py-2 text-[15px] font-semibold text-accent" onClick={() => void host()}>
+            {phase.k === 'error' && <div className="rounded-[14px] bg-[rgba(242,69,61,.1)] px-3 py-2 text-[14px] text-[var(--loss)]">{phase.message}</div>}
+            <button type="button" className="m-tap py-2 text-[15px] font-semibold text-[var(--signal)]" onClick={() => void host()}>
               Show a code on this phone instead
             </button>
           </form>
         )}
 
         {phase.k === 'hosting' && (
-          <div className="m-fade mt-4 flex flex-col items-center gap-3 rounded-[18px] bg-black/25 p-5 text-center">
+          <div className="m-fade mt-4 flex flex-col items-center gap-3 rounded-[18px] bg-[var(--ink)] p-5 text-center">
             <div className="m-label">Type this on your other device</div>
             <div className="m-num font-mono text-[44px] font-black tracking-[0.2em]">{pretty(phase.code)}</div>
-            <div className="flex items-center gap-2 text-[14px] text-mute">
+            <div className="flex items-center gap-2 text-[14px] text-[var(--mute)]">
               <Loader2 size={15} className="animate-spin" /> {phase.ready ? 'Waiting for the other device…' : 'Getting a code ready…'}
             </div>
-            <button className="m-tap rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold" onClick={reset}>
+            <button className="m-tap rounded-full border border-[var(--line-2)] px-4 py-2 text-[15px] font-semibold" onClick={reset}>
               Cancel
             </button>
           </div>
         )}
 
         {phase.k === 'working' && (
-          <div className="m-fade mt-4 flex items-center gap-3 rounded-[18px] bg-black/25 p-4 text-[15px]" aria-live="polite">
-            <Loader2 size={18} className="animate-spin text-accent" /> {phase.status}
+          <div className="m-fade mt-4 flex items-center gap-3 rounded-[18px] bg-[var(--ink)] p-4 text-[15px]" aria-live="polite">
+            <Loader2 size={18} className="animate-spin text-[var(--signal)]" /> {phase.status}
           </div>
         )}
 
         {phase.k === 'done' && (
-          <div className="m-pop mt-4 flex flex-col gap-2 rounded-[18px] bg-accent/10 p-4">
+          <div className="m-pop mt-4 flex flex-col gap-2 rounded-[18px] bg-[rgba(51,194,122,.1)] p-4">
             <div className="flex items-center gap-2 text-[16px] font-bold">
-              <CheckCircle2 size={20} className="text-accent" /> Synced with {phase.stats.peerName || 'your computer'}
+              <CheckCircle2 size={20} className="text-[var(--signal)]" /> Synced with {phase.stats.peerName || 'your computer'}
             </div>
-            <div className="text-[14px] text-mute">
+            <div className="text-[14px] text-[var(--mute)]">
               Received {phase.stats.received.toLocaleString()} hands · sent {phase.stats.sent.toLocaleString()}
               {phase.stats.progressMerged ? ' · progress merged' : ''}
             </div>
@@ -145,7 +145,7 @@ export default function Devices() {
         )}
       </div>
 
-      <Section title="Files">
+      <Section kicker="Or" title="Files">
         <Group>
           <FilePicker className="m-tap block w-full text-left">
             <Row icon={<FileUp size={18} />} title="Import hand histories or a backup" sub=".txt or .zip from the Files app" chevron={false} />
@@ -165,9 +165,9 @@ export default function Devices() {
             }}
           />
         </Group>
-        {note && <div className="mt-2 px-2 text-[14px] text-mute">{note}</div>}
+        {note && <div className="mt-2 px-2 text-[14px] text-[var(--mute)]">{note}</div>}
       </Section>
-      <p className="px-3 text-center text-[13px] text-dim">The codes only introduce the two devices; your hands travel directly between them over an encrypted connection.</p>
+      <p className="m-mono px-3 text-center text-[10.5px] leading-relaxed tracking-wide text-[var(--dim)] uppercase">The codes only introduce the two devices; your hands travel directly between them over an encrypted connection.</p>
     </Screen>
   );
 }

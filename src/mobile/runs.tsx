@@ -9,12 +9,13 @@ import { mastery, recordAttempt as recordTraining } from '../lib/training/progre
 import { buildQueue, useOwnMistakesOf, type QueueItem } from '../lib/training/queue.ts';
 import { DAILY_TIERS, dailySet, dayNumber, liveStreak, pickPuzzle, recentIds, shareText } from '../puzzles/engine.ts';
 import { usePuzzles } from '../puzzles/store.ts';
-import { THEMES, type Puzzle, type Theme } from '../puzzles/types.ts';
+import type { Puzzle, Theme } from '../puzzles/types.ts';
 import { useUnits } from '../settings.ts';
 import { useStore } from '../store.ts';
 import { Player } from './Player.tsx';
 import { puzzleOutcome, puzzleView, questionOutcome, questionView } from './spot.ts';
-import { Bar, Confetti, Countdown, Flame, PrimaryButton } from './ui.tsx';
+import { ThemeBullet, THEME_LINE } from './lines.tsx';
+import { Bar, Confetti, Countdown, PrimaryButton, Streak } from './ui.tsx';
 
 export function useBank() {
   const bank = usePuzzles((s) => s.bank);
@@ -28,19 +29,24 @@ export function useBank() {
 function Loading() {
   return (
     <div className="m-app fixed inset-0 grid place-items-center">
-      <div className="h-9 w-9 animate-spin rounded-full border-[3px] border-white/15 border-t-accent" />
+      <div className="m-label m-live">Shuffling…</div>
     </div>
   );
 }
 
 function RatingChip({ value }: { value: number }) {
-  return <div className="m-num rounded-full bg-white/[.08] px-3 py-1.5 text-[14px] font-bold">{value.toLocaleString()}</div>;
+  return <div className="m-num rounded-full border border-[var(--line-2)] px-3 py-1.5 text-[13px] font-semibold">{value.toLocaleString()}</div>;
 }
 
 /* ------------------------------------------------------------------ rated */
 export function RatedRun() {
   const [params] = useSearchParams();
   const theme = (params.get('theme') as Theme | null) ?? undefined;
+  // A different theme in the URL starts a fresh run.
+  return <RatedRunInner key={theme ?? 'all'} theme={theme} />;
+}
+
+function RatedRunInner({ theme }: { theme?: Theme }) {
   const nav = useNavigate();
   const bank = useBank();
   const record = usePuzzles((s) => s.record);
@@ -66,15 +72,19 @@ export function RatedRun() {
     <Player
       key={puzzle.id}
       view={view}
+      kicker={`Puzzle · ${puzzle.rating}`}
       title={
-        <div className="flex flex-col leading-tight">
-          <span>{theme ? `${THEMES[theme].emoji} ${THEMES[theme].label}` : 'Rated puzzle'}</span>
-          <span className="m-num text-[12px] font-semibold text-dim">Puzzle rating {puzzle.rating}</span>
-        </div>
+        theme ? (
+          <span className="inline-flex items-center gap-2">
+            <ThemeBullet theme={theme} size={18} /> {THEME_LINE[theme].name}
+          </span>
+        ) : (
+          'Rated'
+        )
       }
       right={
-        <div className="flex items-center gap-1.5">
-          {run >= 2 && <Flame n={run} size={14} />}
+        <div className="flex items-center gap-2">
+          {run >= 2 && <span className="m-num text-[12px] font-semibold text-[var(--signal)]">×{run}</span>}
           <RatingChip value={rating} />
         </div>
       }
@@ -111,14 +121,8 @@ export function DailyRun() {
     <Player
       key={puzzle.id}
       view={puzzleView(puzzle, fmt)}
-      title={
-        <div className="flex flex-col leading-tight">
-          <span>Daily Hand #{day}</span>
-          <span className="text-[12px] font-semibold text-dim">
-            {slot + 1}/3 · {DAILY_TIERS[slot].label}
-          </span>
-        </div>
-      }
+      kicker={`Daily Hand · No. ${String(day).padStart(3, '0')}`}
+      title={`${slot + 1} of 3 · ${DAILY_TIERS[slot].label}`}
       progress={{ i: slot, n: 3, results }}
       onClose={() => nav(-1)}
       onAnswer={(key) => {
@@ -166,53 +170,72 @@ function DailyDone({ day, results }: { day: number; results: boolean[] }) {
       sound.fanfare();
     } else haptic.success();
   }, [score]);
-  const headline = score === 3 ? 'Perfect day!' : score === 2 ? 'Nice work' : score === 1 ? 'Tough set' : 'Rough one';
+  const headline = score === 3 ? 'Clean sweep.' : score === 2 ? 'Solid night.' : score === 1 ? 'Tough table.' : 'Rough one.';
+  const date = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
   return (
-    <div className="m-app fixed inset-0 z-30 flex flex-col items-center overflow-y-auto px-6 text-center">
+    <div className="m-app m-grain fixed inset-0 z-30 flex flex-col items-center overflow-y-auto px-6">
       <div className="m-safe-top" />
-      <div className="relative mt-16 flex flex-col items-center">
+      <div className="relative mt-14 w-full max-w-sm">
         {score === 3 && <Confetti n={48} />}
-        <div className="m-label">Daily Hand #{day}</div>
-        <div className="m-pop mt-3 flex gap-2.5">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="grid h-16 w-16 place-items-center rounded-[18px] text-[28px] font-black" style={{ background: results[i] ? 'var(--color-accent)' : results[i] === false ? 'var(--color-loss)' : 'rgba(255,255,255,.08)', color: '#06120c', animationDelay: `${i * 120}ms` }}>
-              {results[i] ? '✓' : results[i] === false ? '✗' : ''}
-            </div>
-          ))}
+        <div className="m-paper m-ticket relative rounded-[18px] px-6 pt-6 pb-7 text-center">
+          <div className="m-label">The Daily Hand · {date}</div>
+          <div className="m-serif mt-1 text-[64px] leading-none">No. {String(day).padStart(3, '0')}</div>
+          <div className="mt-6 flex justify-center gap-3">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="m-stamp grid h-[62px] w-[62px] place-items-center rounded-[12px] border-2"
+                style={{
+                  borderColor: results[i] ? '#16934f' : results[i] === false ? '#d83a2f' : 'rgba(13,13,11,.2)',
+                  color: results[i] ? '#16934f' : '#d83a2f',
+                  animationDelay: `${150 + i * 160}ms`,
+                }}
+              >
+                <span className="m-mono text-[26px] font-bold">{results[i] ? '✓' : results[i] === false ? '✗' : ''}</span>
+              </div>
+            ))}
+          </div>
+          <div className="m-mono mt-2.5 flex justify-center gap-3 text-[10.5px] tracking-wider text-[#7d776b] uppercase">
+            {DAILY_TIERS.map((t) => (
+              <span key={t.label} className="w-[62px] text-center">
+                {t.label}
+              </span>
+            ))}
+          </div>
+          <div className="m-dash mx-auto mt-6 w-full text-[var(--ink)]" />
+          <div className="m-serif mt-5 text-[34px] leading-none">{headline}</div>
+          <div className="m-mono mt-2 text-[12px] text-[#7d776b] uppercase">{score} of 3 correct</div>
         </div>
-        <h1 className="m-title mt-6">{headline}</h1>
-        <p className="m-sub mt-1">
-          {score}/3 correct · {DAILY_TIERS.map((t) => t.label).join(' → ')}
-        </p>
       </div>
-      <div className="m-card mt-8 flex w-full max-w-sm items-center justify-between px-5 py-4">
-        <div className="text-left">
+      <div className="mt-6 grid w-full max-w-sm grid-cols-2 gap-3">
+        <div className="m-card px-4 py-3.5">
           <div className="m-label">Streak</div>
-          <div className="text-[28px] font-extrabold">
-            <Flame n={streak} size={28} />
+          <div className="mt-1">
+            <Streak n={streak} big />
           </div>
         </div>
-        <div className="text-right">
-          <div className="m-label">Next daily in</div>
-          <div className="text-[22px] font-bold">
+        <div className="m-card px-4 py-3.5">
+          <div className="m-label">Next hand in</div>
+          <div className="mt-2 text-[22px] font-semibold">
             <Countdown />
           </div>
         </div>
       </div>
-      <div className="mt-6 flex w-full max-w-sm flex-col gap-3">
+      <div className="mt-5 flex w-full max-w-sm flex-col gap-3">
         <PrimaryButton
-          tone="light"
           onClick={async () => {
             const r = await share(shareText(day, results, streak));
-            setMsg(r === 'copied' ? 'Copied — paste it anywhere' : r === 'failed' ? 'Couldn’t share' : null);
+            setMsg(r === 'copied' ? 'Copied. Paste it in the group chat.' : r === 'failed' ? 'Couldn’t share.' : null);
           }}
         >
-          <Share2 size={19} /> Share result
+          <Share2 size={18} /> Share result
         </PrimaryButton>
-        {msg && <div className="text-[14px] text-mute">{msg}</div>}
-        <PrimaryButton onClick={() => nav('/play', { replace: true })}>Keep going: rated puzzles</PrimaryButton>
-        <button className="m-tap py-3 text-[16px] font-semibold text-mute" onClick={() => nav('/', { replace: true })}>
-          Done
+        {msg && <div className="m-mono text-center text-[12px] text-[var(--mute)]">{msg}</div>}
+        <PrimaryButton tone="signal" onClick={() => nav('/play', { replace: true })}>
+          Keep going — rated puzzles
+        </PrimaryButton>
+        <button className="m-tap m-mono py-3 text-[12px] tracking-wider text-[var(--mute)] uppercase" onClick={() => nav('/', { replace: true })}>
+          Done for tonight
         </button>
       </div>
       <div className="m-safe-bottom h-6" />
@@ -260,9 +283,9 @@ export function PracticeRun() {
   if (!queue.length)
     return (
       <div className="m-app fixed inset-0 z-30 flex flex-col items-center justify-center gap-4 px-8 text-center">
-        <div className="text-[44px]">🎯</div>
-        <h1 className="m-h2">Nothing due right now</h1>
-        <p className="m-sub">You’ve reviewed every mistake that’s due. Try a drill, or import more hands.</p>
+        <div className="m-label">All caught up</div>
+        <h1 className="m-title">Nothing due.</h1>
+        <p className="m-sub">Every mistake that’s due has been reviewed. Try a drill, or import more hands.</p>
         <PrimaryButton onClick={() => nav(-1)} className="w-full max-w-xs">
           Back
         </PrimaryButton>
@@ -276,13 +299,9 @@ export function PracticeRun() {
     <Player
       key={`${q.id}-${i}`}
       view={questionView(q, tx, real)}
-      title={
-        <div className="flex flex-col leading-tight">
-          <span className="truncate">{title}</span>
-          <span className="text-[12px] font-semibold text-dim">{q.source === 'own' ? 'From your hands' : 'Practice spot'}</span>
-        </div>
-      }
-      right={<span className="m-num text-[14px] font-bold text-mute">{i + 1}/{queue.length}</span>}
+      kicker={q.source === 'own' ? 'From your hands' : 'Practice'}
+      title={title}
+      right={<span className="m-num text-[13px] font-semibold text-[var(--mute)]">{i + 1}/{queue.length}</span>}
       progress={{ i, n: queue.length, results }}
       onClose={() => nav(-1)}
       onAnswer={(key) => {
@@ -314,36 +333,36 @@ function PracticeDone({ title, results, drills, onAgain }: { title: string; resu
     else haptic.success();
   }, [ratio]);
   return (
-    <div className="m-app fixed inset-0 z-30 flex flex-col items-center overflow-y-auto px-6 text-center">
+    <div className="m-app m-grain fixed inset-0 z-30 flex flex-col overflow-y-auto px-6">
       <div className="m-safe-top" />
-      <div className="relative mt-16">
+      <div className="relative mx-auto mt-16 w-full max-w-sm">
         {ratio >= 0.8 && <Confetti />}
         <div className="m-label">{title}</div>
-        <div className="m-pop m-num mt-3 text-[64px] leading-none font-black">
+        <div className="m-serif m-pop mt-2 text-[96px] leading-[.85]">
           {score}
-          <span className="text-dim">/{results.length}</span>
+          <span className="text-[var(--dim)]">/{results.length}</span>
         </div>
-        <p className="m-sub mt-3">{ratio >= 0.8 ? 'Excellent — this spot is sinking in.' : ratio >= 0.6 ? 'Solid. A couple more rounds and it sticks.' : 'This is exactly the leak to work on. Go again!'}</p>
-      </div>
-      <div className="m-card mt-8 flex w-full max-w-sm flex-col gap-3 p-4 text-left">
-        {drills.map((d) => {
-          const m = mastery(progress, d);
-          return (
-            <div key={d}>
-              <div className="mb-1.5 flex justify-between text-[14px]">
-                <span className="font-semibold">{DRILL_INFO[d].title}</span>
-                <span className="m-num text-mute">Mastery {m.score}%</span>
+        <p className="m-serif mt-4 text-[26px] leading-tight text-[var(--mute)]">{ratio >= 0.8 ? 'This one’s sinking in.' : ratio >= 0.6 ? 'Getting there. Run it back.' : 'Exactly the leak to work on.'}</p>
+        <div className="m-card mt-8 flex flex-col gap-4 p-4">
+          {drills.map((d) => {
+            const m = mastery(progress, d);
+            return (
+              <div key={d}>
+                <div className="mb-2 flex justify-between text-[14px]">
+                  <span className="font-medium">{DRILL_INFO[d].title}</span>
+                  <span className="m-num text-[var(--mute)]">{m.score}%</span>
+                </div>
+                <Bar value={m.score / 100} color="var(--signal)" />
               </div>
-              <Bar value={m.score / 100} />
-            </div>
-          );
-        })}
-      </div>
-      <div className="mt-6 flex w-full max-w-sm flex-col gap-3">
-        <PrimaryButton onClick={onAgain}>Go again</PrimaryButton>
-        <button className="m-tap py-3 text-[16px] font-semibold text-mute" onClick={() => nav(-1)}>
-          Done
-        </button>
+            );
+          })}
+        </div>
+        <div className="mt-6 flex flex-col gap-3">
+          <PrimaryButton onClick={onAgain}>Run it back</PrimaryButton>
+          <button className="m-tap m-mono py-3 text-[12px] tracking-wider text-[var(--mute)] uppercase" onClick={() => nav(-1)}>
+            Done
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -367,14 +386,8 @@ export function PuzzleReview() {
     <Player
       key={`${p.id}-${retry}`}
       view={puzzleView(p, fmt)}
-      title={
-        <div className="flex flex-col leading-tight">
-          <span>{retry ? 'Try again (unrated)' : 'Review'}</span>
-          <span className="m-num text-[12px] font-semibold text-dim">
-            {THEMES[p.theme].label} · {p.rating}
-          </span>
-        </div>
-      }
+      kicker={`${THEME_LINE[p.theme].name} · ${p.rating}`}
+      title={retry ? 'Try again — unrated' : 'Review'}
       revealed={retry === 0 && attempt ? puzzleOutcome(p, attempt.k ?? (attempt.ok ? p.best : (p.options.find((o) => !p.correct.includes(o.key))?.key ?? p.best)), fmt, tx, attempt.d !== undefined ? { delta: attempt.d, ratingBefore: (attempt.r ?? 0) - attempt.d } : {}) : undefined}
       onClose={() => nav(-1)}
       onAnswer={(key) => puzzleOutcome(p, key, fmt, tx)}
