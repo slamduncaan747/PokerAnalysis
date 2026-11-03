@@ -6,10 +6,9 @@ const config: CapacitorConfig = {
   appId: 'io.github.slamduncaan747.leakfinder',
   appName: 'Leakfinder',
   webDir: 'dist',
-  backgroundColor: '#0d0d0b',
+  // No fixed background: the web view uses the system background, so Light and Dark both look right.
   ios: {
     contentInset: 'never',
-    backgroundColor: '#0d0d0b',
     preferredContentMode: 'mobile',
   },
 };

@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronRight, Flame } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { rankOf, RANKS, suitOf, type Card } from '../lib/cards.ts';
@@ -6,53 +6,31 @@ import { haptic } from '../feedback.ts';
 
 /* ------------------------------------------------------------------ cards */
 const SUIT = ['♠', '♥', '♦', '♣'];
-const SUIT_COLOR = ['#171613', '#d4372c', '#2260cf', '#13804b'];
+// Four-colour deck: suits read at a glance, even small.
+const SUIT_COLOR = ['#1c1c1e', '#e0322b', '#1f6fe5', '#14904f'];
 
-/** A paper playing card with a serif rank. Four-colour deck so suits read at a glance. */
 export function MCard({ card, w = 54, hidden = false, dim = false, className = '', style }: { card?: Card | null; w?: number; hidden?: boolean; dim?: boolean; className?: string; style?: CSSProperties }) {
-  const h = Math.round(w * 1.4);
-  const r = Math.max(5, Math.round(w * 0.11));
+  const h = Math.round(w * 1.38);
+  const r = Math.max(5, Math.round(w * 0.13));
   if (hidden || card === undefined || card === null) {
-    return (
-      <div
-        className={`shrink-0 ${className}`}
-        style={{
-          width: w,
-          height: h,
-          borderRadius: r,
-          background: '#1c1b18',
-          backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,99,25,.55) 0 1px, transparent 1px 6px), repeating-linear-gradient(-45deg, rgba(255,99,25,.55) 0 1px, transparent 1px 6px)',
-          boxShadow: `inset 0 0 0 ${Math.max(2, w * 0.08)}px #1c1b18, inset 0 0 0 ${Math.max(2, w * 0.08) + 1}px rgba(242,237,227,.25), 0 6px 14px -6px rgba(0,0,0,.7)`,
-          ...style,
-        }}
-      />
-    );
+    return <div className={`shrink-0 ${className}`} style={{ width: w, height: h, borderRadius: r, background: 'var(--card-back)', boxShadow: `inset 0 0 0 ${Math.max(2, w * 0.07)}px rgba(255,255,255,.9), 0 2px 6px rgba(0,0,0,.25)`, ...style }} />;
   }
   const rank = RANKS[rankOf(card)];
   const s = suitOf(card);
   return (
     <div
-      className={`relative shrink-0 overflow-hidden ${className}`}
-      style={{
-        width: w,
-        height: h,
-        borderRadius: r,
-        background: '#f4efe6',
-        color: SUIT_COLOR[s],
-        boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.07), 0 10px 22px -10px rgba(0,0,0,.75), 0 2px 4px rgba(0,0,0,.3)',
-        opacity: dim ? 0.4 : 1,
-        ...style,
-      }}
+      className={`relative shrink-0 overflow-hidden bg-white ${className}`}
+      style={{ width: w, height: h, borderRadius: r, color: SUIT_COLOR[s], boxShadow: '0 0 0 .5px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.18)', opacity: dim ? 0.4 : 1, ...style }}
     >
-      <div className="absolute flex flex-col items-center" style={{ left: w * 0.09, top: w * 0.02 }}>
-        <span className="m-serif leading-none" style={{ fontSize: w * 0.6, letterSpacing: rank === 'T' ? '-.08em' : '-.02em' }}>
+      <div className="absolute flex flex-col items-center" style={{ left: w * 0.1, top: w * 0.07 }}>
+        <span className="t-rounded leading-none font-bold" style={{ fontSize: w * 0.44, letterSpacing: rank === 'T' ? '-.06em' : 0 }}>
           {rank === 'T' ? '10' : rank}
         </span>
-        <span className="leading-none" style={{ fontSize: w * 0.27, marginTop: -w * 0.02 }}>
+        <span className="leading-none" style={{ fontSize: w * 0.3, marginTop: w * 0.03 }}>
           {SUIT[s]}
         </span>
       </div>
-      <span className="absolute leading-none" style={{ right: w * 0.07, bottom: w * 0.05, fontSize: w * 0.56 }}>
+      <span className="absolute leading-none" style={{ right: w * 0.08, bottom: w * 0.06, fontSize: w * 0.5 }}>
         {SUIT[s]}
       </span>
     </div>
@@ -70,72 +48,109 @@ export function MiniCards({ cards, w = 22 }: { cards: readonly Card[]; w?: numbe
 }
 
 /* --------------------------------------------------------------- layout */
-export function Screen({ title, eyebrow, right, children, back }: { title: ReactNode; eyebrow?: ReactNode; right?: ReactNode; children: ReactNode; back?: boolean }) {
+/**
+ * A screen with an iOS navigation bar: a large title that collapses into a small centred title in a
+ * translucent bar as you scroll, an optional back button and trailing control.
+ */
+export function Screen({ title, eyebrow, right, children, back, backLabel = 'Back' }: { title: string; eyebrow?: ReactNode; right?: ReactNode; children: ReactNode; back?: boolean; backLabel?: string }) {
   const nav = useNavigate();
+  const sentinel = useRef<HTMLDivElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setCollapsed(!e.isIntersecting), { rootMargin: '-60px 0px 0px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   return (
-    <div className="m-fade px-5 pb-8">
-      <div className="m-safe-top" />
-      <div className="flex h-12 items-center justify-between">
-        {back ? (
-          <button
-            aria-label="Back"
-            className="m-tap -ml-1 grid h-10 w-10 place-items-center rounded-full border border-[var(--line-2)]"
-            onClick={() => {
-              haptic.tap();
-              nav(-1);
-            }}
-          >
-            <ArrowLeft size={19} />
-          </button>
-        ) : (
-          <span className="m-label">{eyebrow}</span>
-        )}
-        {right}
+    <div className="m-fade">
+      <header className={`sticky top-0 z-20 m-safe-top transition-[background-color,box-shadow] duration-200 ${collapsed ? 'm-bar m-hair-b' : ''}`}>
+        <div className="relative flex h-11 items-center justify-between px-2">
+          <div className="z-10 flex min-w-[70px] items-center">
+            {back && (
+              <button
+                className="m-press flex items-center text-[17px] c-tint"
+                onClick={() => {
+                  haptic.tap();
+                  nav(-1);
+                }}
+              >
+                <ChevronLeft size={28} strokeWidth={2.2} className="-mr-0.5" />
+                {backLabel}
+              </button>
+            )}
+          </div>
+          <div className="t-headline absolute inset-x-0 text-center transition-opacity duration-200" style={{ opacity: collapsed ? 1 : 0 }}>
+            {title}
+          </div>
+          <div className="z-10 flex min-w-[70px] justify-end pr-2">{collapsed && right}</div>
+        </div>
+      </header>
+      <div className="px-4 pb-10">
+        <div className="flex items-end justify-between gap-3 pt-1 pb-4">
+          <div className="min-w-0">
+            {eyebrow && <div className="t-foot c-2 font-semibold uppercase">{eyebrow}</div>}
+            <h1 className="t-large">{title}</h1>
+          </div>
+          {right && <div className="pb-1">{right}</div>}
+        </div>
+        <div ref={sentinel} className="h-0" />
+        <div className="flex flex-col gap-7">{children}</div>
       </div>
-      <h1 className="m-title mt-3 mb-6">{title}</h1>
-      <div className="flex flex-col gap-5">{children}</div>
     </div>
   );
 }
 
-export function Section({ title, kicker, action, children, className = '' }: { title?: ReactNode; kicker?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
+/** A content section with a bold header (like the App Store), or a settings-style small caps header. */
+export function Section({ title, action, footer, children, small = false }: { title?: ReactNode; action?: ReactNode; footer?: ReactNode; children: ReactNode; small?: boolean }) {
   return (
-    <section className={className}>
+    <section>
       {(title || action) && (
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            {kicker && <div className="m-label mb-1">{kicker}</div>}
-            <h2 className="m-h2">{title}</h2>
-          </div>
+        <div className={`flex items-end justify-between ${small ? 'mb-1.5 px-4' : 'mb-2.5 px-1'}`}>
+          {title && (small ? <h2 className="t-foot c-2 uppercase">{title}</h2> : <h2 className="t-title3 font-bold">{title}</h2>)}
           {action}
         </div>
       )}
       {children}
+      {footer && <p className="t-foot c-2 mt-1.5 px-4">{footer}</p>}
     </section>
   );
 }
 
-export function Row({ icon, title, sub, right, to, onClick, href, chevron = true, danger = false }: { icon?: ReactNode; title: ReactNode; sub?: ReactNode; right?: ReactNode; to?: string; onClick?: () => void; href?: string; chevron?: boolean; danger?: boolean }) {
-  const inner = (
-    <div className="flex min-h-[58px] items-center gap-3.5 px-4 py-3">
-      {icon && <div className="grid h-8 w-8 shrink-0 place-items-center text-[var(--mute)]">{icon}</div>}
-      <div className="min-w-0 flex-1">
-        <div className={`truncate text-[15.5px] font-medium ${danger ? 'm-loss' : ''}`}>{title}</div>
-        {sub && <div className="truncate text-[13px] text-[var(--mute)]">{sub}</div>}
-      </div>
-      {right}
-      {chevron && (to || onClick || href) && <ChevronRight size={17} className="shrink-0 text-[var(--dim)]" />}
+export function Group({ children, inset = 16 }: { children: ReactNode; inset?: number }) {
+  return (
+    <div className="m-group" style={{ ['--inset' as string]: `${inset}px` }}>
+      {children}
     </div>
   );
+}
+
+/** A list row: optional icon tile, title, subtitle, trailing value/accessory and a disclosure chevron. */
+export function Row({ icon, title, sub, value, right, to, onClick, href, chevron = true, danger = false, center = false }: { icon?: ReactNode; title: ReactNode; sub?: ReactNode; value?: ReactNode; right?: ReactNode; to?: string; onClick?: () => void; href?: string; chevron?: boolean; danger?: boolean; center?: boolean }) {
+  const tappable = !!(to || onClick || href);
+  const inner = (
+    <div className={`flex min-h-[44px] items-center gap-3 py-2.5 pr-4 pl-4 ${center ? 'justify-center' : ''}`}>
+      {icon}
+      <div className={`min-w-0 ${center ? '' : 'flex-1'}`}>
+        <div className={`t-body truncate ${danger ? 'c-red' : center ? 'c-tint' : ''}`}>{title}</div>
+        {sub && <div className="t-foot c-2 truncate">{sub}</div>}
+      </div>
+      {value !== undefined && <div className="t-body c-2 t-num shrink-0">{value}</div>}
+      {right}
+      {chevron && tappable && !center && <ChevronRight size={18} strokeWidth={2.4} className="c-3 -mr-1 shrink-0" />}
+    </div>
+  );
+  const cls = 'block w-full text-left m-row-press transition-colors';
   if (to)
     return (
-      <Link to={to} onClick={() => haptic.tap()} className="m-tap block">
+      <Link to={to} onClick={() => haptic.tap()} className={cls}>
         {inner}
       </Link>
     );
   if (href)
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => haptic.tap()} className="m-tap block">
+      <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => haptic.tap()} className={cls}>
         {inner}
       </a>
     );
@@ -146,7 +161,7 @@ export function Row({ icon, title, sub, right, to, onClick, href, chevron = true
           haptic.tap();
           onClick();
         }}
-        className="m-tap block w-full text-left"
+        className={cls}
       >
         {inner}
       </button>
@@ -154,24 +169,19 @@ export function Row({ icon, title, sub, right, to, onClick, href, chevron = true
   return inner;
 }
 
-export function Group({ children }: { children: ReactNode }) {
-  return <div className="m-card m-divide overflow-hidden">{children}</div>;
-}
-
 /* -------------------------------------------------------------- controls */
 export function Segmented<T extends string>({ options, value, onChange }: { options: { value: T; label: ReactNode }[]; value: T; onChange: (v: T) => void }) {
   const idx = Math.max(0, options.findIndex((o) => o.value === value));
   return (
-    <div className="relative grid rounded-[12px] border border-[var(--line)] bg-[var(--ink)] p-[3px]" style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}>
+    <div className="relative grid h-8 rounded-[9px] p-[2px]" style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)`, background: 'var(--fill)' }}>
       <div
-        className="absolute top-[3px] bottom-[3px] rounded-[9px] bg-[var(--paper)] transition-transform duration-300"
-        style={{ width: `calc((100% - 6px) / ${options.length})`, left: 3, transform: `translateX(${idx * 100}%)`, transitionTimingFunction: 'cubic-bezier(.2,.8,.2,1)' }}
+        className="absolute top-[2px] bottom-[2px] rounded-[7px] transition-transform duration-300"
+        style={{ width: `calc((100% - 4px) / ${options.length})`, left: 2, transform: `translateX(${idx * 100}%)`, background: 'var(--seg)', boxShadow: '0 3px 8px rgba(0,0,0,.12), 0 3px 1px rgba(0,0,0,.04)', transitionTimingFunction: 'cubic-bezier(.2,.8,.2,1)' }}
       />
       {options.map((o) => (
         <button
           key={o.value}
-          className="relative z-10 h-9 text-[13.5px] font-semibold transition-colors duration-300"
-          style={{ color: o.value === value ? 'var(--ink)' : 'var(--mute)' }}
+          className={`relative z-10 text-[13px] ${o.value === value ? 'font-semibold' : 'font-medium'}`}
           onClick={() => {
             if (o.value !== value) haptic.tap();
             onChange(o.value);
@@ -184,6 +194,7 @@ export function Segmented<T extends string>({ options, value, onChange }: { opti
   );
 }
 
+/** iOS switch. */
 export function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
     <button
@@ -194,16 +205,16 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
         haptic.tap();
         onChange(!checked);
       }}
-      className="relative h-[30px] w-[50px] shrink-0 rounded-full transition-colors duration-200"
-      style={{ background: checked ? 'var(--signal)' : 'var(--ink-4)' }}
+      className="relative h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-200"
+      style={{ background: checked ? 'var(--green)' : 'var(--fill-2)' }}
     >
-      <span className="absolute top-[3px] left-[3px] h-[24px] w-[24px] rounded-full transition-transform duration-200" style={{ background: 'var(--paper)', transform: checked ? 'translateX(20px)' : 'none' }} />
+      <span className="absolute top-[2px] left-[2px] h-[27px] w-[27px] rounded-full bg-white transition-transform duration-200" style={{ transform: checked ? 'translateX(20px)' : 'none', boxShadow: '0 3px 8px rgba(0,0,0,.15), 0 3px 1px rgba(0,0,0,.06)' }} />
     </button>
   );
 }
 
-export function PrimaryButton({ children, onClick, to, className = '', tone = 'primary', disabled }: { children: ReactNode; onClick?: () => void; to?: string; className?: string; tone?: 'primary' | 'signal' | 'ghost' | 'ink'; disabled?: boolean }) {
-  const cls = `m-tap m-btn m-btn-${tone} ${className}`;
+export function Button({ children, onClick, to, className = '', tone = 'filled', disabled }: { children: ReactNode; onClick?: () => void; to?: string; className?: string; tone?: 'filled' | 'tinted' | 'gray' | 'plain'; disabled?: boolean }) {
+  const cls = `m-press m-btn m-btn-${tone} ${className}`;
   if (to)
     return (
       <Link to={to} className={cls} onClick={() => haptic.press()}>
@@ -224,8 +235,22 @@ export function PrimaryButton({ children, onClick, to, className = '', tone = 'p
   );
 }
 
+export function Badge({ n, color = 'var(--red)' }: { n: number; color?: string }) {
+  if (n <= 0) return null;
+  return <span className="t-num inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full px-1.5 text-[13px] font-semibold text-white" style={{ background: color }}>{n > 99 ? '99+' : n}</span>;
+}
+
+export function StreakLabel({ n }: { n: number }) {
+  return (
+    <span className="t-sub inline-flex items-center gap-1 font-semibold" style={{ color: n > 0 ? 'var(--orange)' : 'var(--label-3)' }}>
+      <Flame size={16} fill={n > 0 ? 'currentColor' : 'none'} strokeWidth={2} />
+      <span className="t-num">{n}</span>
+    </span>
+  );
+}
+
 /* ---------------------------------------------------------------- charts */
-export function Sparkline({ data, w = 120, h = 36, color = 'var(--signal)', fill = true }: { data: number[]; w?: number; h?: number; color?: string; fill?: boolean }) {
+export function Sparkline({ data, w = 120, h = 36, color = 'var(--tint)', fill = true }: { data: number[]; w?: number; h?: number; color?: string; fill?: boolean }) {
   const id = useMemo(() => `sg${Math.random().toString(36).slice(2, 8)}`, []);
   if (data.length < 2) return <div style={{ width: w, height: h }} />;
   const min = Math.min(...data);
@@ -237,19 +262,18 @@ export function Sparkline({ data, w = 120, h = 36, color = 'var(--signal)', fill
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
       <defs>
         <linearGradient id={id} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor={color} stopOpacity=".28" />
+          <stop offset="0" stopColor={color} stopOpacity=".22" />
           <stop offset="1" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
       {fill && <path d={`${d}L${w},${h}L0,${h}Z`} fill={`url(#${id})`} />}
-      <path d={d} fill="none" stroke={color} strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="3.5" fill={color} />
-      <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="7" fill={color} opacity=".2" />
+      <path d={d} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="3.5" fill={color} stroke="var(--bg-2)" strokeWidth="1.5" />
     </svg>
   );
 }
 
-/** Rating history on a hairline grid; width follows the container. */
+/** Rating history with light gridlines and value labels, like Health and Stocks. */
 export function RatingChart({ data, h = 150 }: { data: number[]; h?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(320);
@@ -263,45 +287,46 @@ export function RatingChart({ data, h = 150 }: { data: number[]; h?: number }) {
   }, []);
   const min = Math.min(...data);
   const max = Math.max(...data);
+  const plotW = Math.max(40, w - 40);
   return (
     <div ref={ref} className="relative w-full" style={{ height: h }}>
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="m-dash text-[var(--text)]" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex flex-col justify-between" style={{ right: 40 }}>
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-px" style={{ background: 'var(--sep)' }} />
         ))}
       </div>
       {data.length < 2 ? (
-        <div className="relative grid h-full place-items-center text-[13px] text-[var(--dim)]">
-          <span className="m-mono bg-[var(--ink-2)] px-2">NO DATA YET — SOLVE A FEW</span>
+        <div className="t-foot c-2 relative grid h-full place-items-center" style={{ paddingRight: 40 }}>
+          Solve a few puzzles to see your progress
         </div>
       ) : (
         <>
-          <Sparkline data={data} w={w} h={h - 4} />
-          <span className="m-mono absolute top-1 right-0 text-[10.5px] text-[var(--dim)]">{max}</span>
-          <span className="m-mono absolute right-0 bottom-1 text-[10.5px] text-[var(--dim)]">{min}</span>
+          <Sparkline data={data} w={plotW} h={h - 2} />
+          <span className="t-cap c-2 t-num absolute top-0 right-0">{max}</span>
+          <span className="t-cap c-2 t-num absolute right-0 bottom-0">{min}</span>
         </>
       )}
     </div>
   );
 }
 
-export function Ring({ value, size = 64, stroke = 6, color = 'var(--signal)', children }: { value: number; size?: number; stroke?: number; color?: string; children?: ReactNode }) {
+export function Ring({ value, size = 64, stroke = 7, color = 'var(--green)', children }: { value: number; size?: number; stroke?: number; color?: string; children?: ReactNode }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   return (
     <div className="relative grid place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(242,237,227,.08)" strokeWidth={stroke} fill="none" />
-        <circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeLinecap="butt" strokeDasharray={c} strokeDashoffset={c * (1 - Math.max(0, Math.min(1, value)))} style={{ transition: 'stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)' }} />
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--fill)" strokeWidth={stroke} fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - Math.max(0, Math.min(1, value)))} style={{ transition: 'stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)' }} />
       </svg>
       <div className="absolute inset-0 grid place-items-center">{children}</div>
     </div>
   );
 }
 
-export function Bar({ value, color = 'var(--paper)', h = 4, track = 'rgba(242,237,227,.08)' }: { value: number; color?: string; h?: number; track?: string }) {
+export function Bar({ value, color = 'var(--tint)', h = 4 }: { value: number; color?: string; h?: number }) {
   return (
-    <div className="w-full overflow-hidden" style={{ height: h, background: track, borderRadius: h }}>
+    <div className="w-full overflow-hidden" style={{ height: h, background: 'var(--fill)', borderRadius: h }}>
       <div className="h-full" style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%`, background: color, borderRadius: h, transition: 'width .8s cubic-bezier(.2,.8,.2,1)' }} />
     </div>
   );
@@ -322,11 +347,11 @@ export function CountUp({ from, to, ms = 700, className = '' }: { from: number; 
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [from, to, ms]);
-  return <span className={`m-num ${className}`}>{v.toLocaleString()}</span>;
+  return <span className={`t-num ${className}`}>{v.toLocaleString()}</span>;
 }
 
-const CONF_COLORS = ['#ff6319', '#f2ede3', '#fccc0a', '#00add0', '#33c27a'];
-export function Confetti({ n = 36 }: { n?: number }) {
+const CONF_COLORS = ['#34c759', '#ff9500', '#5856d6', '#ff2d55', '#ffcc00', '#30b0c7'];
+export function Confetti({ n = 40 }: { n?: number }) {
   const bits = useMemo(
     () =>
       Array.from({ length: n }, (_, i) => {
@@ -355,44 +380,5 @@ export function Countdown() {
   const mid = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
   const s = Math.max(0, Math.floor((mid - now) / 1000));
   const pad = (x: number) => String(x).padStart(2, '0');
-  return <span className="m-num">{`${pad(Math.floor(s / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`}</span>;
-}
-
-/** Daily streak chip: a lit flame when alive. */
-export function Streak({ n, big = false }: { n: number; big?: boolean }) {
-  const on = n > 0;
-  return (
-    <span className={`inline-flex items-center gap-1.5 ${big ? '' : 'm-chip !normal-case !tracking-normal'}`} style={{ color: on ? 'var(--signal)' : 'var(--dim)', borderColor: on ? 'rgba(255,99,25,.45)' : undefined }}>
-      <Flame size={big ? 26 : 14} strokeWidth={2} fill={on ? 'currentColor' : 'none'} className={on ? 'm-live' : ''} />
-      <span className={`m-num font-semibold ${big ? 'text-[34px] text-[var(--text)]' : 'text-[13px]'}`}>{n}</span>
-    </span>
-  );
-}
-
-/** The Leakfinder mark: a spade with a leak. */
-export function Mark({ size = 22 }: { size?: number }) {
-  return (
-    <svg width={size} height={size * 1.2} viewBox="0 0 64 76" aria-hidden>
-      <path d="M32 6C22 18 10 25 10 37a10.5 10.5 0 0 0 18 7.4L25 54h14l-3-9.6A10.5 10.5 0 0 0 54 37C54 25 42 18 32 6z" fill="var(--paper)" />
-      <path d="M32 58.5c-2.9 0-5-2.1-5-4.8 0-2.7 2.7-6.3 5-9.2 2.3 2.9 5 6.5 5 9.2 0 2.7-2.1 4.8-5 4.8z" fill="var(--signal)" transform="translate(0 9.5)" />
-    </svg>
-  );
-}
-
-/** Serif text with amounts and numbers set in Geist, so "11bb" never reads as "llbb". */
-export function Rich({ text }: { text: string }) {
-  const parts = text.split(/((?:[−-]\s?)?[$€£₮]?\d[\d,]*(?:\.\d+)?(?:bb|%)?)/g);
-  return (
-    <>
-      {parts.map((p, i) =>
-        i % 2 === 1 ? (
-          <span key={i} style={{ fontFamily: 'var(--f-sans)', fontSize: '.8em', fontWeight: 500, letterSpacing: '-.02em', fontVariantNumeric: 'tabular-nums' }}>
-            {p}
-          </span>
-        ) : (
-          p
-        ),
-      )}
-    </>
-  );
+  return <span className="t-num">{`${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`}</span>;
 }
