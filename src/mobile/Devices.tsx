@@ -1,11 +1,10 @@
-import { CircleCheck, Download, FileUp, Loader2 } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { haptic, sound } from '../feedback.ts';
 import { appDevice, deviceName, saveBackup } from '../transfer/device.ts';
 import { newCode, normalizeCode, runSession, type TransferStats } from '../transfer/protocol.ts';
-import { IconTile } from './meta.tsx';
 import { FilePicker } from './MyGame.tsx';
-import { Button, Group, Row, Screen, Section } from './ui.tsx';
+import { Btn, List, PushScreen, Row, Section } from './ui.tsx';
 
 type Phase = { k: 'idle' } | { k: 'hosting'; code: string; ready: boolean } | { k: 'working'; status: string } | { k: 'done'; stats: TransferStats } | { k: 'error'; message: string };
 
@@ -20,7 +19,7 @@ export default function Devices() {
   useEffect(() => () => cancelRef.current(), []);
 
   const sync = async (link: { channel: Parameters<typeof runSession>[0]; close: () => void }) => {
-    setPhase({ k: 'working', status: 'Connected. Comparing hands…' });
+    setPhase({ k: 'working', status: 'Connected — comparing hands…' });
     haptic.press();
     try {
       const stats = await runSession(link.channel, appDevice(), { name: deviceName(), onStatus: (status) => setPhase({ k: 'working', status }) });
@@ -72,84 +71,84 @@ export default function Devices() {
 
   const code = normalizeCode(typed);
   return (
-    <Screen title="Sync & Devices" back>
-      <Section footer="The code only introduces the two devices. Your hands travel directly between them over an encrypted connection.">
-        <div className="m-card p-4">
-          <div className="t-headline">Receive Hands from Your Computer</div>
-          <p className="t-sub c-2 mt-1">On your computer, open Leakfinder, choose Sync & Devices, then Show a Code. Enter the code here.</p>
+    <PushScreen title="Sync & devices">
+      <div>
+        <h1 className="f-display">Send hands from your computer</h1>
+        <p className="f-body t2 mt-2">On your computer, open Leakfinder → Sync &amp; devices → Show a code. Type it here. No account needed.</p>
+      </div>
 
-          {(phase.k === 'idle' || phase.k === 'error') && (
-            <form
-              className="mt-4 flex flex-col gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void join();
-              }}
-            >
-              <input
-                aria-label="Code from your computer"
-                autoCapitalize="characters"
-                autoComplete="one-time-code"
-                autoCorrect="off"
-                spellCheck={false}
-                maxLength={7}
-                value={typed}
-                onChange={(e) => setTyped(e.target.value.toUpperCase())}
-                placeholder="ABC 123"
-                className="t-rounded t-num h-14 w-full rounded-[12px] text-center text-[28px] font-semibold tracking-[0.2em] uppercase outline-none"
-                style={{ background: 'var(--fill)', color: 'var(--label)' }}
-              />
-              <Button disabled={code.length !== 6}>Connect</Button>
-              {phase.k === 'error' && <div className="t-foot c-red text-center">{phase.message}</div>}
-              <Button tone="plain" onClick={() => void host()}>
-                Show a Code on This iPhone Instead
-              </Button>
-            </form>
-          )}
+      {(phase.k === 'idle' || phase.k === 'error') && (
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void join();
+          }}
+        >
+          <input
+            aria-label="Code from your computer"
+            autoCapitalize="characters"
+            autoComplete="one-time-code"
+            autoCorrect="off"
+            spellCheck={false}
+            maxLength={7}
+            value={typed}
+            onChange={(e) => setTyped(e.target.value.toUpperCase())}
+            placeholder="ABC 123"
+            className="f-num h-[72px] w-full rounded-[18px] text-center text-[34px] font-extrabold tracking-[0.2em] uppercase outline-none placeholder:text-white/15"
+            style={{ background: 'var(--s1)', color: 'var(--text)', boxShadow: 'inset 0 0 0 2px var(--line-2)' }}
+          />
+          <Btn disabled={code.length !== 6}>Connect</Btn>
+          {phase.k === 'error' && <div className="f-small c-bad text-center">{phase.message}</div>}
+          <Btn tone="ghost" onClick={() => void host()}>
+            Show a code on this phone instead
+          </Btn>
+        </form>
+      )}
 
-          {phase.k === 'hosting' && (
-            <div className="m-fade mt-4 flex flex-col items-center gap-2 rounded-[12px] p-4 text-center" style={{ background: 'var(--fill-3)' }}>
-              <div className="t-foot c-2">Enter this code on your other device</div>
-              <div className="t-rounded t-num text-[40px] font-bold tracking-[0.15em]">{pretty(phase.code)}</div>
-              <div className="t-foot c-2 flex items-center gap-1.5">
-                <Loader2 size={14} className="animate-spin" /> {phase.ready ? 'Waiting for the other device…' : 'Getting a code…'}
-              </div>
-              <Button tone="plain" onClick={reset}>
-                Cancel
-              </Button>
-            </div>
-          )}
-
-          {phase.k === 'working' && (
-            <div className="t-sub mt-4 flex items-center gap-2 rounded-[12px] p-4" style={{ background: 'var(--fill-3)' }} aria-live="polite">
-              <Loader2 size={18} className="c-2 animate-spin" /> {phase.status}
-            </div>
-          )}
-
-          {phase.k === 'done' && (
-            <div className="m-pop mt-4 flex flex-col items-center gap-1 rounded-[12px] p-4 text-center" style={{ background: 'var(--green-soft)' }}>
-              <CircleCheck size={36} fill="var(--green)" stroke="var(--bg-2)" />
-              <div className="t-headline mt-1">Synced with {phase.stats.peerName || 'your computer'}</div>
-              <div className="t-foot c-2">
-                Received {phase.stats.received.toLocaleString()} hands · sent {phase.stats.sent.toLocaleString()}
-                {phase.stats.progressMerged ? ' · progress merged' : ''}
-              </div>
-              <Button to="/game" className="mt-3">
-                Open My Game
-              </Button>
-            </div>
-          )}
+      {phase.k === 'hosting' && (
+        <div className="m-tile-flat m-fade flex flex-col items-center gap-2 p-6 text-center">
+          <div className="f-tiny t2">Type this on your other device</div>
+          <div className="f-num text-[46px] font-extrabold tracking-[0.15em]">{pretty(phase.code)}</div>
+          <div className="f-small t2 flex items-center gap-1.5">
+            <Loader2 size={15} className="animate-spin" /> {phase.ready ? 'Waiting for the other device…' : 'Getting a code…'}
+          </div>
+          <Btn tone="ghost" onClick={reset} className="mt-2">
+            Cancel
+          </Btn>
         </div>
-      </Section>
+      )}
 
-      <Section title="Files" small footer={note ?? 'Hand histories (.txt or .zip) or a Leakfinder backup.'}>
-        <Group inset={58}>
+      {phase.k === 'working' && (
+        <div className="m-tile-flat f-ui flex items-center gap-3 p-5" aria-live="polite">
+          <Loader2 size={20} className="t2 animate-spin" /> {phase.status}
+        </div>
+      )}
+
+      {phase.k === 'done' && (
+        <div className="m-pop flex flex-col items-center gap-1 rounded-[22px] p-6 text-center" style={{ background: 'var(--go-bg)', boxShadow: 'inset 0 0 0 2px var(--go)' }}>
+          <div className="grid h-14 w-14 place-items-center rounded-full" style={{ background: 'var(--go)', color: 'var(--go-ink)' }}>
+            <Check size={30} strokeWidth={3.4} />
+          </div>
+          <div className="f-head mt-2">Synced with {phase.stats.peerName || 'your computer'}</div>
+          <div className="f-small t2">
+            {phase.stats.received.toLocaleString()} hands in · {phase.stats.sent.toLocaleString()} out
+            {phase.stats.progressMerged ? ' · progress merged' : ''}
+          </div>
+          <Btn to="/game" className="mt-4">
+            Open My Game
+          </Btn>
+        </div>
+      )}
+
+      <Section title="Files" note={note ?? 'The code only introduces the two devices; your hands travel directly between them, encrypted.'}>
+        <List>
           <FilePicker className="m-row-press block w-full text-left">
-            <Row icon={<IconTile icon={FileUp} color="var(--blue)" />} title="Import from Files" chevron={false} />
+            <Row title="Import from Files" sub="Hand histories (.txt, .zip) or a backup" chevron={false} />
           </FilePicker>
           <Row
-            icon={<IconTile icon={Download} color="var(--green)" />}
-            title="Export a Backup"
+            title="Export a backup"
+            sub="Every hand and your progress in one file"
             onClick={async () => {
               try {
                 const n = await saveBackup();
@@ -160,8 +159,8 @@ export default function Devices() {
               }
             }}
           />
-        </Group>
+        </List>
       </Section>
-    </Screen>
+    </PushScreen>
   );
 }

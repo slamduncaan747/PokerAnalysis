@@ -82,120 +82,103 @@ html { overscroll-behavior-y: none; }
 .native button, .native a { -webkit-touch-callout: none; }
 
 /* =====================================================================
-   Phone app — built on Apple's design principles:
-   clarity (system type, clear hierarchy), deference (the cards and the decision are the content;
-   the chrome stays quiet), depth (translucent bars, layered sheets), consistency (one set of
-   components everywhere), and it follows the system's Light/Dark appearance.
+   Phone app — see docs/DESIGN.md.
+   A dark card room, a felt table, casino chips as the icon system, and tactile 3D controls.
    ===================================================================== */
 .m-app {
-  color-scheme: light dark;
-  --bg: #f2f2f7; --bg-2: #ffffff; --bg-3: #f2f2f7; --elev: #ffffff;
-  --fill: rgba(118,118,128,.12); --fill-2: rgba(118,118,128,.2); --fill-3: rgba(118,118,128,.08);
-  --label: #000000; --label-2: rgba(60,60,67,.6); --label-3: rgba(60,60,67,.3);
-  --sep: rgba(60,60,67,.17);
-  --tint: #5856d6; --tint-soft: rgba(88,86,214,.12); --on-tint: #ffffff;
-  --green: #34c759; --green-text: #248a3d; --green-soft: rgba(52,199,89,.14);
-  --red: #ff3b30; --red-text: #d70015; --red-soft: rgba(255,59,48,.12);
-  --orange: #ff9500; --yellow: #ffcc00; --blue: #007aff; --teal: #30b0c7; --pink: #ff2d55; --purple: #af52de; --indigo: #5856d6; --gray: #8e8e93; --mint: #00c7be; --brown: #a2845e;
-  --felt: #12784a; --felt-2: #0b5c37;
-  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05);
-  --bar: rgba(249,249,249,.82);
-  --sheet-dim: rgba(0,0,0,.18);
-  --sheet-bg: #f2f2f7; --sheet-cell: #ffffff;
-  --seg: #ffffff; --card-back: linear-gradient(135deg,#5b59d8,#3f3db5);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
-  background: var(--bg); color: var(--label); min-height: 100dvh;
+  --bg: #0b0e17; --s1: #141927; --s2: #1c2235; --s3: #252c44;
+  --line: rgba(255,255,255,.07); --line-2: rgba(255,255,255,.12);
+  --text: #f4f6fc; --text-2: #99a2bd; --text-3: #5d6580;
+  --go: #2bd67b; --go-lip: #1a9c57; --go-ink: #052814; --go-bg: #0f2a1d;
+  --gold: #ffc233; --gold-lip: #d49a00; --gold-ink: #2e2000;
+  --bad: #ff5a5f; --bad-lip: #c93c41; --bad-bg: #2b1419;
+  --blue: #3d7bff; --blue-lip: #2a58c4;
+  --amber: #ffb020; --amber-lip: #c98400;
+  --slate: #2a3150; --slate-lip: #1b2038;
+  --felt-1: #23935b; --felt-2: #0f5434; --rail: #08241a;
+  font-family: "Rubik Variable", -apple-system, system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100dvh;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
-  font-size: 17px; line-height: 1.29; letter-spacing: -.41px;
+  font-size: 16px; line-height: 1.35;
 }
-@media (prefers-color-scheme: dark) {
-  .m-app {
-    --bg: #000000; --bg-2: #1c1c1e; --bg-3: #2c2c2e; --elev: #2c2c2e;
-    --fill: rgba(118,118,128,.24); --fill-2: rgba(118,118,128,.36); --fill-3: rgba(118,118,128,.16);
-    --label: #ffffff; --label-2: rgba(235,235,245,.6); --label-3: rgba(235,235,245,.3);
-    --sep: rgba(84,84,88,.6);
-    --tint: #7d7aff; --tint-soft: rgba(125,122,255,.2); --on-tint: #ffffff;
-    --green: #30d158; --green-text: #30d158; --green-soft: rgba(48,209,88,.18);
-    --red: #ff453a; --red-text: #ff6961; --red-soft: rgba(255,69,58,.18);
-    --orange: #ff9f0a; --yellow: #ffd60a; --blue: #0a84ff; --teal: #40c8e0; --pink: #ff375f; --purple: #bf5af2; --indigo: #5e5ce6; --gray: #8e8e93; --mint: #63e6e2; --brown: #ac8e68;
-    --felt: #0e6640; --felt-2: #094a2e;
-    --shadow: none;
-    --bar: rgba(22,22,24,.78);
-    --sheet-dim: rgba(0,0,0,.45);
-    --sheet-bg: #1c1c1e; --sheet-cell: #2c2c2e;
-    --seg: #636366; --card-back: linear-gradient(135deg,#4a48c4,#2e2c8f);
-  }
-}
-html.mobile-ui, html.mobile-ui body { background: #f2f2f7; }
-@media (prefers-color-scheme: dark) { html.mobile-ui, html.mobile-ui body { background: #000; } }
+html.mobile-ui, html.mobile-ui body { background: #0b0e17; }
 .m-app input, .m-app textarea { -webkit-user-select: text; user-select: text; }
 
-/* iOS type ramp. */
-.t-large { font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: .37px; }
-.t-title1 { font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: .36px; }
-.t-title2 { font-size: 22px; line-height: 28px; font-weight: 700; letter-spacing: .35px; }
-.t-title3 { font-size: 20px; line-height: 25px; font-weight: 600; letter-spacing: .38px; }
-.t-headline { font-size: 17px; line-height: 22px; font-weight: 600; letter-spacing: -.41px; }
-.t-body { font-size: 17px; line-height: 22px; letter-spacing: -.41px; }
-.t-callout { font-size: 16px; line-height: 21px; letter-spacing: -.32px; }
-.t-sub { font-size: 15px; line-height: 20px; letter-spacing: -.24px; }
-.t-foot { font-size: 13px; line-height: 18px; letter-spacing: -.08px; }
-.t-cap { font-size: 12px; line-height: 16px; }
-.t-cap2 { font-size: 11px; line-height: 13px; letter-spacing: .06px; }
-.t-rounded { font-family: ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif; }
-.t-num { font-variant-numeric: tabular-nums; }
-.c-2 { color: var(--label-2); }
-.c-3 { color: var(--label-3); }
-.c-tint { color: var(--tint); }
-.c-green { color: var(--green-text); }
-.c-red { color: var(--red-text); }
+/* Type: heavy numbers and titles, quiet body. */
+.f-hero { font-size: 44px; line-height: 1; font-weight: 800; letter-spacing: -.02em; }
+.f-display { font-size: 32px; line-height: 1.05; font-weight: 800; letter-spacing: -.02em; }
+.f-title { font-size: 24px; line-height: 1.15; font-weight: 700; letter-spacing: -.01em; }
+.f-head { font-size: 20px; line-height: 1.2; font-weight: 700; letter-spacing: -.01em; }
+.f-body { font-size: 17px; line-height: 1.35; font-weight: 400; }
+.f-ui { font-size: 15px; line-height: 1.3; font-weight: 500; }
+.f-small { font-size: 13px; line-height: 1.3; font-weight: 500; }
+.f-tiny { font-size: 11px; line-height: 1.2; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.f-num { font-variant-numeric: tabular-nums; }
+.t2 { color: var(--text-2); } .t3 { color: var(--text-3); }
+.c-go { color: var(--go); } .c-bad { color: var(--bad); } .c-gold { color: var(--gold); }
 
-/* Surfaces */
-.m-card { background: var(--bg-2); border-radius: 16px; box-shadow: var(--shadow); }
-.m-group { background: var(--bg-2); border-radius: 12px; overflow: hidden; }
-.m-group > * + * { position: relative; }
-.m-group > * + *::before { content: ""; position: absolute; top: 0; right: 0; left: var(--inset, 16px); height: .5px; background: var(--sep); }
-.m-bar { background: var(--bar); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); }
-.m-hair-b { box-shadow: inset 0 -.5px 0 var(--sep); }
-.m-hair-t { box-shadow: inset 0 .5px 0 var(--sep); }
+/* Surfaces: tiles have a lip, like the buttons, so everything tappable reads as an object. */
+.m-tile { background: var(--s1); border-radius: 18px; box-shadow: inset 0 0 0 1px var(--line), 0 3px 0 #070912; }
+.m-tile-flat { background: var(--s1); border-radius: 18px; box-shadow: inset 0 0 0 1px var(--line); }
+.m-list > * + * { box-shadow: inset 0 1px 0 var(--line); }
+.m-press { transition: transform .12s ease, box-shadow .12s ease, filter .12s; touch-action: manipulation; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.m-tile.m-press:active { transform: translateY(3px); box-shadow: inset 0 0 0 1px var(--line), 0 0 0 #070912; }
+.m-row-press:active { background: rgba(255,255,255,.04); }
 
-/* Controls */
-.m-press { transition: opacity .15s, transform .2s cubic-bezier(.2,.8,.2,1), background-color .15s; touch-action: manipulation; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.m-press:active { opacity: .55; }
-.m-press-card { transition: transform .25s cubic-bezier(.2,.8,.2,1); touch-action: manipulation; cursor: pointer; }
-.m-press-card:active { transform: scale(.975); }
-.m-row-press:active { background: var(--fill-3); }
-.m-btn { height: 50px; border-radius: 14px; font-size: 17px; font-weight: 600; letter-spacing: -.41px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 18px; width: 100%; }
-.m-btn-filled { background: var(--tint); color: var(--on-tint); }
-.m-btn-tinted { background: var(--tint-soft); color: var(--tint); }
-.m-btn-gray { background: var(--fill); color: var(--tint); }
-.m-btn-plain { background: transparent; color: var(--tint); }
-.m-btn:disabled { opacity: .35; }
+/* 3D button: colour + lip; sinks on press. */
+.m-btn3d {
+  --b: var(--go); --lip: var(--go-lip); --ink: var(--go-ink);
+  position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+  min-height: 54px; padding: 0 18px; border-radius: 16px; background: var(--b); color: var(--ink);
+  font-size: 17px; font-weight: 700; letter-spacing: .01em; box-shadow: 0 4px 0 var(--lip);
+  transition: transform .1s ease, box-shadow .1s ease, filter .15s; touch-action: manipulation; cursor: pointer;
+}
+.m-btn3d:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 var(--lip); }
+.m-btn3d:disabled { cursor: default; }
+.m-btn3d:disabled:not(.keep) { filter: saturate(.25) brightness(.65); }
+.b-go { --b: var(--go); --lip: var(--go-lip); --ink: var(--go-ink); }
+.b-gold { --b: var(--gold); --lip: var(--gold-lip); --ink: var(--gold-ink); }
+.b-bad { --b: var(--bad); --lip: var(--bad-lip); --ink: #ffffff; }
+.b-blue { --b: var(--blue); --lip: var(--blue-lip); --ink: #ffffff; }
+.b-amber { --b: var(--amber); --lip: var(--amber-lip); --ink: #2a1a00; }
+.b-slate { --b: var(--slate); --lip: var(--slate-lip); --ink: var(--text); }
+.b-ghost { --b: transparent; --lip: transparent; --ink: var(--text-2); box-shadow: none; }
+.b-outline { --b: var(--s1); --lip: #070912; --ink: var(--text); box-shadow: inset 0 0 0 1.5px var(--line-2), 0 4px 0 #070912; }
+.b-outline:active:not(:disabled) { box-shadow: inset 0 0 0 1.5px var(--line-2), 0 0 0 #070912; }
+
+.m-pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 5px 11px 5px 6px; background: var(--s1); box-shadow: inset 0 0 0 1px var(--line); font-weight: 700; font-size: 15px; }
 .m-safe-top { padding-top: env(safe-area-inset-top, 0px); }
 .m-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
-.m-hscroll { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.m-hscroll { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; }
+.m-hscroll > * { scroll-snap-align: start; }
 .m-hscroll::-webkit-scrollbar, .m-noscrollbar::-webkit-scrollbar { display: none; }
 .m-noscrollbar { scrollbar-width: none; }
+.m-tabbar { background: rgba(11,14,23,.92); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: inset 0 1px 0 var(--line); }
 
-/* The table: a calm felt. No texture, no lines — the cards are the content. */
-.m-felt { background: radial-gradient(120% 90% at 50% 30%, #1a8b58 0%, var(--felt) 55%, var(--felt-2) 100%); }
+/* The table. */
+.m-felt { background: radial-gradient(90% 80% at 50% 38%, var(--felt-1) 0%, #187444 45%, var(--felt-2) 100%); }
+.m-rail { box-shadow: inset 0 -10px 0 var(--rail), inset 0 -11px 0 rgba(255,255,255,.08), 0 14px 30px -10px rgba(0,0,0,.6); }
 
-/* Motion: quick, physical, and only where it explains something. */
-@keyframes m-in { from { opacity: 0; transform: translateY(8px); } }
-.m-in { animation: m-in .38s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 40ms); }
+/* Motion. */
+@keyframes m-in { from { opacity: 0; transform: translateY(10px); } }
+.m-in { animation: m-in .4s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 45ms); }
 @keyframes m-fade { from { opacity: 0; } }
 .m-fade { animation: m-fade .22s ease both; }
-@keyframes m-sheet { from { transform: translateY(100%); } }
-.m-sheet-in { animation: m-sheet .5s cubic-bezier(.32,.72,0,1) both; }
-@keyframes m-deal { from { opacity: 0; transform: translateY(-24px) scale(.92); } }
-.m-deal { animation: m-deal .42s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 60ms); }
-@keyframes m-shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(3px); } 30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); } }
+@keyframes m-up { from { transform: translateY(100%); } }
+.m-up { animation: m-up .38s cubic-bezier(.2,1,.3,1) both; }
+@keyframes m-deal { from { opacity: 0; transform: translate(var(--dx, 0), -70px) rotate(-14deg) scale(.7); } }
+.m-deal { animation: m-deal .5s cubic-bezier(.2,1.1,.35,1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+@keyframes m-shake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
 .m-shake { animation: m-shake .45s both; }
-@keyframes m-pop { 0% { transform: scale(.5); opacity: 0; } 70% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); } }
-.m-pop { animation: m-pop .42s cubic-bezier(.2,1.2,.4,1) both; }
+@keyframes m-pop { 0% { transform: scale(.3); opacity: 0; } 65% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+.m-pop { animation: m-pop .5s cubic-bezier(.2,1.3,.4,1) both; animation-delay: calc(var(--i, 0) * 110ms); }
+@keyframes m-flip { 0% { transform: rotateY(180deg); } 100% { transform: rotateY(0); } }
+.m-flip { animation: m-flip .6s cubic-bezier(.2,1,.3,1) both; animation-delay: calc(var(--i, 0) * 140ms); backface-visibility: hidden; }
+@keyframes m-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.m-bob { animation: m-bob 2.4s ease-in-out infinite; }
 @keyframes m-conf { from { transform: translate(0, 0) rotate(0); opacity: 1; } to { transform: translate(var(--x), var(--y)) rotate(var(--r)); opacity: 0; } }
-.m-confetti i { position: absolute; left: 50%; top: 35%; width: 7px; height: 11px; border-radius: 2px; animation: m-conf 1.1s cubic-bezier(.15,.7,.3,1) forwards; }
+.m-confetti i { position: absolute; left: 50%; top: 35%; width: 8px; height: 12px; border-radius: 2px; animation: m-conf 1.15s cubic-bezier(.15,.7,.3,1) forwards; }
 @media (prefers-reduced-motion: reduce) {
-  .m-in, .m-deal, .m-pop, .m-sheet-in, .m-shake, .m-fade { animation: none !important; }
+  .m-in, .m-deal, .m-pop, .m-up, .m-shake, .m-fade, .m-flip, .m-bob { animation: none !important; }
   .m-confetti { display: none; }
 }

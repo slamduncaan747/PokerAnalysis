@@ -1,4 +1,5 @@
-import { CalendarDays, CircleUserRound, Puzzle, Target } from 'lucide-react';
+import '@fontsource-variable/rubik';
+import { Puzzle, Sun, Target, UserRound } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { HashRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { getCloudConfig } from '../cloud/config.ts';
@@ -20,30 +21,26 @@ const PracticeRun = lazy(() => import('./runs.tsx').then((m) => ({ default: m.Pr
 const PuzzleReview = lazy(() => import('./runs.tsx').then((m) => ({ default: m.PuzzleReview })));
 
 const TABS = [
-  { to: '/', label: 'Today', icon: CalendarDays, end: true },
+  { to: '/', label: 'Today', icon: Sun, end: true },
   { to: '/puzzles', label: 'Puzzles', icon: Puzzle },
   { to: '/game', label: 'My Game', icon: Target },
-  { to: '/profile', label: 'Profile', icon: CircleUserRound },
+  { to: '/profile', label: 'Profile', icon: UserRound },
 ];
 
 function TabBar() {
   return (
-    <nav className="m-bar m-hair-t fixed inset-x-0 bottom-0 z-20">
-      <div className="mx-auto flex max-w-[600px]">
+    <nav className="m-tabbar fixed inset-x-0 bottom-0 z-20">
+      <div className="mx-auto flex max-w-[600px] px-2">
         {TABS.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            replace
-            onClick={() => haptic.tap()}
-            className="flex flex-1 flex-col items-center gap-[3px] pt-[7px] pb-1"
-            style={({ isActive }) => ({ color: isActive ? 'var(--tint)' : 'var(--gray)' })}
-          >
+          <NavLink key={to} to={to} end={end} replace onClick={() => haptic.tap()} className="flex flex-1 flex-col items-center gap-1 pt-2 pb-1.5">
             {({ isActive }) => (
               <>
-                <Icon size={25} strokeWidth={isActive ? 2.3 : 1.8} />
-                <span className="text-[10px] leading-none font-medium tracking-[.1px]">{label}</span>
+                <span className="grid h-8 w-14 place-items-center rounded-full transition-colors duration-200" style={{ background: isActive ? 'rgba(43,214,123,.14)' : 'transparent', color: isActive ? 'var(--go)' : 'var(--text-3)' }}>
+                  <Icon size={23} strokeWidth={isActive ? 2.6 : 2.1} />
+                </span>
+                <span className="text-[11px] leading-none font-semibold" style={{ color: isActive ? 'var(--text)' : 'var(--text-3)' }}>
+                  {label}
+                </span>
               </>
             )}
           </NavLink>
@@ -61,7 +58,7 @@ function Tabs() {
     window.scrollTo(0, 0);
   }, [loc.pathname]);
   return (
-    <div ref={ref} className="min-h-[100dvh]" style={{ paddingBottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' }}>
+    <div ref={ref} className="min-h-[100dvh]" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       <div className="mx-auto max-w-[600px]">
         <Suspense fallback={<div className="h-[60vh]" />}>
           <Outlet />

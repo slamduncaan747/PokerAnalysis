@@ -1,4 +1,4 @@
-import { CircleCheck, CircleX, Flame, Share } from 'lucide-react';
+import { Check, Flame, Share, Trophy, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { haptic, sound } from '../feedback.ts';
@@ -14,8 +14,8 @@ import { useUnits } from '../settings.ts';
 import { useStore } from '../store.ts';
 import { Player } from './Player.tsx';
 import { puzzleOutcome, puzzleView, questionOutcome, questionView } from './spot.ts';
-import { DrillTile, THEME_META } from './meta.tsx';
-import { Bar, Button, Confetti, Countdown, Group } from './ui.tsx';
+import { DrillChip, THEME_META } from './meta.tsx';
+import { Bar, Btn, Confetti, Countdown, RatingPill } from './ui.tsx';
 
 export function useBank() {
   const bank = usePuzzles((s) => s.bank);
@@ -29,15 +29,10 @@ export function useBank() {
 function Loading() {
   return (
     <div className="m-app fixed inset-0 grid place-items-center">
-      <div className="h-7 w-7 animate-spin rounded-full border-[2.5px]" style={{ borderColor: 'var(--fill-2)', borderTopColor: 'var(--label-2)' }} />
-    </div>
-  );
-}
-
-function RatingChip({ value }: { value: number }) {
-  return (
-    <div className="t-rounded t-num rounded-full px-2.5 py-1 text-[15px] font-semibold" style={{ background: 'var(--fill)' }}>
-      {value.toLocaleString()}
+      <div className="m-bob flex">
+        <div className="h-14 w-10 rotate-[-8deg] rounded-[6px] bg-white shadow-lg" />
+        <div className="-ml-4 h-14 w-10 rotate-[8deg] rounded-[6px] bg-[#c8343c] shadow-lg" style={{ boxShadow: 'inset 0 0 0 3px #fff' }} />
+      </div>
     </div>
   );
 }
@@ -76,9 +71,9 @@ function RatedRunInner({ theme }: { theme?: Theme }) {
     <Player
       key={puzzle.id}
       view={view}
-      title={theme ? THEME_META[theme].name : 'Rated Puzzle'}
+      title={theme ? THEME_META[theme].name : 'Rated puzzle'}
       subtitle={`Puzzle rating ${puzzle.rating.toLocaleString()}${run >= 2 ? ` · ${run} in a row` : ''}`}
-      right={<RatingChip value={rating} />}
+      right={<RatingPill rating={rating} />}
       onClose={() => nav(-1)}
       onAnswer={(key) => {
         const ok = puzzle.correct.includes(key);
@@ -87,7 +82,7 @@ function RatedRunInner({ theme }: { theme?: Theme }) {
         return puzzleOutcome(puzzle, key, fmt, tx, { delta, ratingBefore: before });
       }}
       onNext={next}
-      nextLabel="Next Puzzle"
+      nextLabel="Continue"
     />
   );
 }
@@ -125,7 +120,7 @@ export function DailyRun() {
         if (slot + 1 >= 3) setFinished(true);
         setSlot((s) => s + 1);
       }}
-      nextLabel={slot + 1 >= 3 ? 'See Results' : 'Next Hand'}
+      nextLabel={slot + 1 >= 3 ? 'See results' : 'Next hand'}
     />
   );
 }
@@ -149,6 +144,34 @@ async function share(text: string): Promise<'shared' | 'copied' | 'failed'> {
   }
 }
 
+/** A result "card" for the Daily Hand: flips over to a tick or a cross. */
+function ResultCard({ ok, i, label }: { ok: boolean; i: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="m-flip grid h-[104px] w-[74px] place-items-center rounded-[10px] bg-white" style={{ ['--i' as string]: i, transform: `rotate(${(i - 1) * 6}deg)`, boxShadow: '0 8px 18px rgba(0,0,0,.35)' }}>
+        <div className="grid h-12 w-12 place-items-center rounded-full" style={{ background: ok ? 'var(--go)' : 'var(--bad)', color: ok ? 'var(--go-ink)' : '#fff' }}>
+          {ok ? <Check size={28} strokeWidth={3.6} /> : <X size={28} strokeWidth={3.6} />}
+        </div>
+      </div>
+      <span className="f-tiny text-white/75">{label}</span>
+    </div>
+  );
+}
+
+/** A Duolingo-style stat box: coloured header, big number. */
+function StatBox({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
+  return (
+    <div className="m-pop flex-1 overflow-hidden rounded-[16px]" style={{ boxShadow: `inset 0 0 0 2px ${color}` }}>
+      <div className="f-tiny py-1.5 text-center" style={{ background: color, color: '#0b0e17' }}>
+        {label}
+      </div>
+      <div className="f-head f-num flex items-center justify-center gap-1.5 py-3 font-extrabold" style={{ color }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function DailyDone({ day, results }: { day: number; results: boolean[] }) {
   const nav = useNavigate();
   const profile = usePuzzles((s) => s.profile);
@@ -161,62 +184,50 @@ function DailyDone({ day, results }: { day: number; results: boolean[] }) {
       sound.fanfare();
     } else haptic.success();
   }, [score]);
-  const headline = score === 3 ? 'Perfect Day' : score === 2 ? 'Nicely Done' : score === 1 ? 'Tough Set' : 'Better Luck Tomorrow';
+  const headline = score === 3 ? 'Perfect day!' : score === 2 ? 'Nice work!' : score === 1 ? 'One for three' : 'Tough day';
   return (
     <div className="m-app fixed inset-0 z-30 flex flex-col overflow-y-auto">
-      <div className="m-safe-top" />
-      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col px-5">
-        <div className="relative mt-16 flex flex-col items-center text-center">
-          {score === 3 && <Confetti n={44} />}
-          <div className="flex gap-3">
-            {[0, 1, 2].map((i) => {
-              const r = results[i];
-              const Icon = r ? CircleCheck : CircleX;
-              return (
-                <div key={i} className="m-pop flex flex-col items-center gap-1.5" style={{ animationDelay: `${i * 120}ms` }}>
-                  <Icon size={64} strokeWidth={1.8} fill="currentColor" stroke="var(--bg)" style={{ color: r ? 'var(--green)' : 'var(--red)' }} />
-                  <span className="t-cap c-2">{DAILY_TIERS[i].label}</span>
-                </div>
-              );
-            })}
-          </div>
-          <h1 className="t-title1 mt-6">{headline}</h1>
-          <p className="t-body c-2 mt-1">
-            You got {score} of 3 in Daily Hand #{day}.
-          </p>
+      <div className="m-felt m-rail relative px-5 pb-12" style={{ borderRadius: '0 0 40px 40px' }}>
+        {score === 3 && <Confetti n={50} />}
+        <div className="m-safe-top" />
+        <div className="f-tiny pt-6 text-center text-white/70">Daily Hand #{day}</div>
+        <div className="mt-5 flex justify-center gap-3">
+          {[0, 1, 2].map((i) => (
+            <ResultCard key={i} i={i} ok={!!results[i]} label={DAILY_TIERS[i].label} />
+          ))}
         </div>
-        <div className="mt-8">
-          <Group>
-            <div className="flex items-center justify-between px-4 py-3">
-              <span className="t-body">Streak</span>
-              <span className="t-body inline-flex items-center gap-1 font-semibold" style={{ color: streak ? 'var(--orange)' : 'var(--label-2)' }}>
-                <Flame size={17} fill={streak ? 'currentColor' : 'none'} /> {streak} {streak === 1 ? 'day' : 'days'}
-              </span>
-            </div>
-            <div className="flex items-center justify-between px-4 py-3">
-              <span className="t-body">Next Daily Hand</span>
-              <span className="t-body c-2">
-                <Countdown />
-              </span>
-            </div>
-          </Group>
+      </div>
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5">
+        <h1 className="f-display mt-7 text-center">{headline}</h1>
+        <p className="f-ui t2 mt-1.5 text-center">Same three hands for everyone today. Next in <Countdown />.</p>
+        <div className="mt-6 flex gap-3">
+          <StatBox label="Score" color="var(--go)">
+            {score}/3
+          </StatBox>
+          <StatBox label="Streak" color="#ff9f43">
+            <Flame size={20} fill="currentColor" /> {streak}
+          </StatBox>
+          <StatBox label="Best" color="var(--gold)">
+            <Trophy size={18} /> {profile.bestStreak}
+          </StatBox>
         </div>
-        <div className="mt-auto flex flex-col gap-2 pt-8 pb-4">
-          <Button
+        <div className="mt-auto flex flex-col gap-3 pt-8 pb-5">
+          <Btn
+            tone="gold"
             onClick={async () => {
               const r = await share(shareText(day, results, streak));
-              setMsg(r === 'copied' ? 'Copied to clipboard' : r === 'failed' ? 'Couldn’t share' : null);
+              setMsg(r === 'copied' ? 'Copied — paste it in the group chat' : r === 'failed' ? 'Couldn’t share' : null);
             }}
           >
-            <Share size={18} strokeWidth={2.2} /> Share Result
-          </Button>
-          {msg && <div className="t-foot c-2 text-center">{msg}</div>}
-          <Button tone="gray" onClick={() => nav('/play', { replace: true })}>
-            Play Rated Puzzles
-          </Button>
-          <Button tone="plain" onClick={() => nav('/', { replace: true })}>
+            <Share size={19} strokeWidth={2.6} /> Share result
+          </Btn>
+          {msg && <div className="f-small t2 text-center">{msg}</div>}
+          <Btn tone="outline" onClick={() => nav('/play', { replace: true })}>
+            Keep playing
+          </Btn>
+          <Btn tone="ghost" onClick={() => nav('/', { replace: true })}>
             Done
-          </Button>
+          </Btn>
         </div>
       </div>
       <div className="m-safe-bottom" />
@@ -264,12 +275,14 @@ export function PracticeRun() {
   if (!queue.length)
     return (
       <div className="m-app fixed inset-0 z-30 flex flex-col items-center justify-center gap-2 px-10 text-center">
-        <CircleCheck size={56} strokeWidth={1.6} className="c-2 mb-2" />
-        <h1 className="t-title2">All Caught Up</h1>
-        <p className="t-body c-2">You’ve reviewed every mistake that’s due. Try a drill, or import more hands.</p>
-        <Button tone="gray" onClick={() => nav(-1)} className="mt-4 max-w-[200px]">
+        <div className="m-pop mb-3 grid h-20 w-20 place-items-center rounded-full" style={{ background: 'var(--go)', color: 'var(--go-ink)' }}>
+          <Check size={40} strokeWidth={3.4} />
+        </div>
+        <h1 className="f-display">All caught up</h1>
+        <p className="f-body t2">Every mistake that’s due has been reviewed. Try a drill, or import more hands.</p>
+        <Btn tone="outline" onClick={() => nav(-1)} className="mt-5 max-w-[220px]">
           Done
-        </Button>
+        </Btn>
       </div>
     );
 
@@ -282,7 +295,7 @@ export function PracticeRun() {
       view={questionView(q, tx, real)}
       title={title}
       subtitle={q.source === 'own' ? 'From your hands' : 'Practice spot'}
-      right={<span className="t-sub c-2 t-num">{i + 1}/{queue.length}</span>}
+      right={<span className="f-small f-num font-bold text-white/80">{i + 1}/{queue.length}</span>}
       progress={{ i, n: queue.length, results }}
       onClose={() => nav(-1)}
       onAnswer={(key) => {
@@ -299,7 +312,7 @@ export function PracticeRun() {
         return questionOutcome(q, key, g.correct, tx);
       }}
       onNext={() => setI((x) => x + 1)}
-      nextLabel={i + 1 >= queue.length ? 'Finish' : 'Next Spot'}
+      nextLabel={i + 1 >= queue.length ? 'Finish' : 'Continue'}
     />
   );
 }
@@ -316,41 +329,38 @@ function PracticeDone({ title, results, drills, onAgain }: { title: string; resu
   return (
     <div className="m-app fixed inset-0 z-30 flex flex-col overflow-y-auto">
       <div className="m-safe-top" />
-      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col px-5">
-        <div className="relative mt-16 text-center">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5">
+        <div className="relative mt-14 text-center">
           {ratio >= 0.8 && <Confetti />}
-          <div className="t-sub c-2">{title}</div>
-          <div className="m-pop t-rounded t-num mt-1 text-[72px] leading-none font-bold">
+          <div className="f-tiny t2">{title}</div>
+          <div className="m-pop f-num mt-2 text-[80px] leading-none font-extrabold" style={{ color: ratio >= 0.8 ? 'var(--go)' : ratio >= 0.6 ? 'var(--gold)' : 'var(--text)' }}>
             {score}
-            <span className="c-3">/{results.length}</span>
+            <span className="t3">/{results.length}</span>
           </div>
-          <p className="t-body c-2 mt-3">{ratio >= 0.8 ? 'Great session. This spot is sinking in.' : ratio >= 0.6 ? 'Solid. Another round will lock it in.' : 'This is the leak to work on. Try another round.'}</p>
+          <p className="f-body t2 mt-3">{ratio >= 0.8 ? 'Great session — this spot is sinking in.' : ratio >= 0.6 ? 'Solid. One more round locks it in.' : 'This is the leak to work on. Run it back.'}</p>
         </div>
-        <div className="mt-8">
-          <div className="t-foot c-2 mb-1.5 px-4 uppercase">Mastery</div>
-          <Group inset={58}>
-            {drills.map((d) => {
-              const m = mastery(progress, d);
-              return (
-                <div key={d} className="flex items-center gap-3 px-4 py-2.5">
-                  <DrillTile drill={d} />
-                  <div className="flex-1">
-                    <div className="mb-1.5 flex justify-between">
-                      <span className="t-body">{DRILL_INFO[d].title}</span>
-                      <span className="t-body c-2 t-num">{m.score}%</span>
-                    </div>
-                    <Bar value={m.score / 100} color="var(--green)" />
+        <div className="m-tile-flat mt-8 flex flex-col gap-4 p-4">
+          {drills.map((d) => {
+            const m = mastery(progress, d);
+            return (
+              <div key={d} className="flex items-center gap-3">
+                <DrillChip drill={d} size={36} />
+                <div className="flex-1">
+                  <div className="mb-1.5 flex justify-between">
+                    <span className="f-ui font-semibold">{DRILL_INFO[d].title}</span>
+                    <span className="f-ui f-num t2">{m.score}%</span>
                   </div>
+                  <Bar value={m.score / 100} h={8} />
                 </div>
-              );
-            })}
-          </Group>
+              </div>
+            );
+          })}
         </div>
-        <div className="mt-auto flex flex-col gap-2 pt-8 pb-4">
-          <Button onClick={onAgain}>Practice Again</Button>
-          <Button tone="plain" onClick={() => nav(-1)}>
+        <div className="mt-auto flex flex-col gap-3 pt-8 pb-5">
+          <Btn onClick={onAgain}>Run it back</Btn>
+          <Btn tone="ghost" onClick={() => nav(-1)}>
             Done
-          </Button>
+          </Btn>
         </div>
       </div>
       <div className="m-safe-bottom" />
@@ -376,13 +386,13 @@ export function PuzzleReview() {
     <Player
       key={`${p.id}-${retry}`}
       view={puzzleView(p, fmt)}
-      title={retry ? 'Try Again' : 'Review'}
+      title={retry ? 'Try again' : 'Review'}
       subtitle={`${THEME_META[p.theme].name} · Puzzle rating ${p.rating}${retry ? ' · Unrated' : ''}`}
       revealed={retry === 0 && attempt ? puzzleOutcome(p, attempt.k ?? (attempt.ok ? p.best : (p.options.find((o) => !p.correct.includes(o.key))?.key ?? p.best)), fmt, tx, attempt.d !== undefined ? { delta: attempt.d, ratingBefore: (attempt.r ?? 0) - attempt.d } : {}) : undefined}
       onClose={() => nav(-1)}
       onAnswer={(key) => puzzleOutcome(p, key, fmt, tx)}
       onNext={() => (retry ? nav(-1) : setRetry((r) => r + 1))}
-      nextLabel={retry ? 'Done' : 'Try Again'}
+      nextLabel={retry ? 'Done' : 'Try again'}
     />
   );
 }

@@ -1,27 +1,19 @@
 import { Capacitor } from '@capacitor/core';
-import { BookOpen, Check, Coins, Globe, Laptop, Lock, Monitor, Vibrate, Volume2 } from 'lucide-react';
+import { Check, Flame, Trophy, Target } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { haptic } from '../feedback.ts';
 import { liveStreak, ratingSeries } from '../puzzles/engine.ts';
+import { tierOf } from '../puzzles/ranks.ts';
 import { usePuzzles } from '../puzzles/store.ts';
 import { CURRENCIES, STAKES, stakeLabel, useSettings, type Currency } from '../settings.ts';
-import { IconTile, THEME_META, THEME_ORDER, ThemeTile } from './meta.tsx';
+import { THEME_META, THEME_ORDER, ThemeChip } from './meta.tsx';
 import { setUiMode, WEB_URL } from './mode.ts';
-import { Bar, Group, RatingChart, Row, Screen, Section, Toggle } from './ui.tsx';
+import { Bar, Btn, List, PushScreen, RatingChart, Row, Section, TabScreen, TierChip, Toggle } from './ui.tsx';
 
-function Stat({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="px-4 py-3">
-      <div className="t-rounded t-num text-[22px] leading-tight font-bold">{value}</div>
-      <div className="t-foot c-2">{label}</div>
-    </div>
-  );
-}
+const CURRENCY_NAME: Record<Currency, string> = { $: 'US dollar  $', '€': 'Euro  €', '£': 'Pound  £', '₮': 'Tether  ₮ (USDT)' };
 
-const CURRENCY_NAME: Record<Currency, string> = { $: 'US Dollar ($)', '€': 'Euro (€)', '£': 'Pound (£)', '₮': 'Tether (₮ USDT)' };
-
-/** Settings detail screen: a list with a checkmark, like Settings › Display & Brightness. */
+/** Settings detail screen: pick one, with a check. */
 export function SettingsSelect() {
   const { key } = useParams();
   const s = useSettings();
@@ -29,54 +21,66 @@ export function SettingsSelect() {
     haptic.tap();
     s.set(patch);
   };
-  const check = (on: boolean) => (on ? <Check size={20} strokeWidth={2.6} className="c-tint shrink-0" /> : null);
+  const tick = (on: boolean) => (on ? <Check size={20} strokeWidth={3} className="c-go shrink-0" /> : null);
   if (key === 'units')
     return (
-      <Screen title="Amounts" back backLabel="Profile">
-        <Section footer="Money uses your default stake. Your own hands can use their real stakes instead.">
-          <Group>
-            <Row title="Big Blinds" sub="12.5 bb" right={check(s.units === 'bb')} onClick={() => pick({ units: 'bb' })} chevron={false} />
-            <Row title="Money" sub={`${s.currency}${(12.5 * s.stake.bb).toFixed(2)} at ${stakeLabel(s.stake, s.currency)}`} right={check(s.units === 'money')} onClick={() => pick({ units: 'money' })} chevron={false} />
-          </Group>
+      <PushScreen title="Show amounts in">
+        <Section note="Money uses your default stake. Your own hands can use their real stakes instead.">
+          <List>
+            <Row title="Big blinds" sub="A bet shows as 12.5bb" right={tick(s.units === 'bb')} onClick={() => pick({ units: 'bb' })} chevron={false} />
+            <Row title="Money" sub={`A bet shows as ${s.currency}${(12.5 * s.stake.bb).toFixed(2)} at ${stakeLabel(s.stake, s.currency)}`} right={tick(s.units === 'money')} onClick={() => pick({ units: 'money' })} chevron={false} />
+          </List>
         </Section>
-      </Screen>
+      </PushScreen>
     );
   if (key === 'stake')
     return (
-      <Screen title="Default Stake" back backLabel="Profile">
-        <Group>
+      <PushScreen title="Default stake">
+        <List>
           {STAKES.map((st) => (
-            <Row key={st.bb} title={stakeLabel(st, s.currency)} right={check(st.bb === s.stake.bb)} onClick={() => pick({ stake: st })} chevron={false} />
+            <Row key={st.bb} title={stakeLabel(st, s.currency)} right={tick(st.bb === s.stake.bb)} onClick={() => pick({ stake: st })} chevron={false} />
           ))}
-        </Group>
-      </Screen>
+        </List>
+      </PushScreen>
     );
   return (
-    <Screen title="Currency" back backLabel="Profile">
-      <Group>
+    <PushScreen title="Currency">
+      <List>
         {CURRENCIES.map((c) => (
-          <Row key={c} title={CURRENCY_NAME[c]} right={check(c === s.currency)} onClick={() => pick({ currency: c })} chevron={false} />
+          <Row key={c} title={CURRENCY_NAME[c]} right={tick(c === s.currency)} onClick={() => pick({ currency: c })} chevron={false} />
         ))}
-      </Group>
-    </Screen>
+      </List>
+    </PushScreen>
   );
 }
 
-/** iOS-style confirmation sheet. */
 function ConfirmSheet({ title, action, onConfirm, onCancel }: { title: string; action: string; onConfirm: () => void; onCancel: () => void }) {
   return (
-    <div className="m-fade fixed inset-0 z-50 flex items-end" style={{ background: 'var(--sheet-dim)' }} onClick={onCancel}>
-      <div className="m-sheet-in m-safe-bottom mx-auto w-full max-w-[600px] px-2 pb-2" onClick={(e) => e.stopPropagation()}>
-        <div className="overflow-hidden rounded-[14px]" style={{ background: 'var(--elev)' }}>
-          <div className="t-foot c-2 px-4 py-3.5 text-center">{title}</div>
-          <button className="t-body m-row-press h-[57px] w-full text-[20px] c-red" style={{ boxShadow: 'inset 0 .5px 0 var(--sep)' }} onClick={onConfirm}>
+    <div className="m-fade fixed inset-0 z-50 flex items-end bg-black/60" onClick={onCancel}>
+      <div className="m-up m-safe-bottom mx-auto w-full max-w-[600px] rounded-t-[26px] px-5 pt-6 pb-4" style={{ background: 'var(--s1)' }} onClick={(e) => e.stopPropagation()}>
+        <div className="f-head text-center">{action}?</div>
+        <p className="f-ui t2 mt-2 text-center font-normal">{title}</p>
+        <div className="mt-6 flex flex-col gap-3">
+          <Btn tone="bad" onClick={onConfirm}>
             {action}
-          </button>
+          </Btn>
+          <Btn tone="ghost" onClick={onCancel}>
+            Cancel
+          </Btn>
         </div>
-        <button className="m-row-press mt-2 h-[57px] w-full rounded-[14px] text-[20px] font-semibold c-tint" style={{ background: 'var(--elev)' }} onClick={onCancel}>
-          Cancel
-        </button>
       </div>
+    </div>
+  );
+}
+
+function Stat({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string | number; color: string }) {
+  return (
+    <div className="m-tile-flat flex-1 px-3 py-3 text-center">
+      <div className="flex justify-center" style={{ color }}>
+        {icon}
+      </div>
+      <div className="f-head f-num mt-1">{value}</div>
+      <div className="f-tiny t3">{label}</div>
     </div>
   );
 }
@@ -88,90 +92,87 @@ export default function Profile() {
   const [confirmReset, setConfirmReset] = useState(false);
   const series = ratingSeries(profile);
   const acc = profile.games ? Math.round((profile.solved / profile.games) * 100) : 0;
+  const { tier, next, progress, toNext } = tierOf(profile.rating);
   const themes = THEME_ORDER.map((t) => ({ t, ...(profile.themes[t] ?? { n: 0, ok: 0 }) })).filter((x) => x.n > 0);
   const native = Capacitor.isNativePlatform();
   const money = settings.units === 'money';
   return (
-    <Screen title="Profile">
-      <div className="m-card m-in overflow-hidden">
-        <div className="p-4 pb-2">
-          <div className="t-sub c-2">Puzzle Rating</div>
-          <div className="t-rounded t-num text-[44px] leading-[1.05] font-bold">{profile.rating.toLocaleString()}</div>
-          <div className="mt-3">
-            <RatingChart data={series.slice(-120)} h={100} />
+    <TabScreen title="Profile">
+      <div className="m-tile m-in flex flex-col items-center px-5 pt-6 pb-5 text-center">
+        <TierChip rating={profile.rating} size={92} />
+        <div className="f-title mt-3 font-extrabold">{tier.name}</div>
+        <div className="f-ui t2">{tier.blurb}</div>
+        <div className="f-hero f-num mt-3">{profile.rating.toLocaleString()}</div>
+        {next && (
+          <div className="mt-3 w-full">
+            <Bar value={progress} color="var(--gold)" h={12} />
+            <div className="f-small t2 mt-2">
+              <span className="f-num font-bold" style={{ color: 'var(--text)' }}>{toNext}</span> points to {next.name}
+            </div>
           </div>
-        </div>
-        <div className="mt-2 grid grid-cols-3" style={{ boxShadow: 'inset 0 .5px 0 var(--sep)' }}>
-          <Stat label="Best" value={profile.peak.toLocaleString()} />
-          <Stat label="Played" value={profile.games} />
-          <Stat label="Solved" value={`${acc}%`} />
-          <Stat label="Day Streak" value={liveStreak(profile)} />
-          <Stat label="Best Streak" value={profile.bestStreak} />
-          <Stat label="Best Run" value={profile.bestRun} />
+        )}
+        <div className="mt-5 w-full">
+          <RatingChart data={series.slice(-120)} h={90} />
         </div>
       </div>
 
+      <div className="flex gap-3">
+        <Stat icon={<Target size={20} strokeWidth={2.4} />} label="Solved" value={`${acc}%`} color="var(--go)" />
+        <Stat icon={<Flame size={20} fill="currentColor" />} label="Streak" value={liveStreak(profile)} color="#ff9f43" />
+        <Stat icon={<Trophy size={20} strokeWidth={2.4} />} label="Best" value={profile.peak.toLocaleString()} color="var(--gold)" />
+      </div>
+
       {themes.length > 0 && (
-        <Section title="By Theme">
-          <Group inset={58}>
+        <Section title="By theme">
+          <div className="m-tile-flat flex flex-col gap-4 p-4">
             {themes.map(({ t, n, ok }) => (
-              <div key={t} className="flex items-center gap-3 px-4 py-2.5">
-                <ThemeTile theme={t} />
+              <div key={t} className="flex items-center gap-3">
+                <ThemeChip theme={t} size={34} />
                 <div className="flex-1">
                   <div className="mb-1.5 flex justify-between">
-                    <span className="t-body">{THEME_META[t].name}</span>
-                    <span className="t-body c-2 t-num">{Math.round((ok / n) * 100)}%</span>
+                    <span className="f-ui font-semibold">{THEME_META[t].name}</span>
+                    <span className="f-ui f-num t2">
+                      {Math.round((ok / n) * 100)}% <span className="t3">· {n}</span>
+                    </span>
                   </div>
-                  <Bar value={ok / n} color={ok / n >= 0.7 ? 'var(--green)' : ok / n >= 0.5 ? 'var(--orange)' : 'var(--red)'} />
+                  <Bar value={ok / n} h={8} color={ok / n >= 0.7 ? 'var(--go)' : ok / n >= 0.5 ? 'var(--gold)' : 'var(--bad)'} />
                 </div>
               </div>
             ))}
-          </Group>
+          </div>
         </Section>
       )}
 
-      <Section title="Display" small footer={money ? `A 15 bb bet shows as ${settings.currency}${(15 * settings.stake.bb).toFixed(2)}.` : undefined}>
-        <Group inset={58}>
-          <Row icon={<IconTile icon={Coins} color="var(--green)" />} title="Amounts" value={money ? 'Money' : 'Big Blinds'} to="/settings/units" />
-          {money && <Row icon={<IconTile icon={Coins} color="var(--teal)" />} title="Default Stake" value={stakeLabel(settings.stake, settings.currency)} to="/settings/stake" />}
-          {money && <Row icon={<IconTile icon={Globe} color="var(--blue)" />} title="Currency" value={settings.currency} to="/settings/currency" />}
-          {money && <Row icon={<IconTile icon={Check} color="var(--gray)" />} title="Use Each Hand’s Stakes" right={<Toggle label="Use each hand’s stakes" checked={settings.handStakes} onChange={(handStakes) => settings.set({ handStakes })} />} />}
-        </Group>
+      <Section title="Settings" note={money ? `A 15bb bet shows as ${settings.currency}${(15 * settings.stake.bb).toFixed(2)}.` : undefined}>
+        <List>
+          <Row title="Show amounts in" value={money ? 'Money' : 'Big blinds'} to="/settings/units" />
+          {money && <Row title="Default stake" value={stakeLabel(settings.stake, settings.currency)} to="/settings/stake" />}
+          {money && <Row title="Currency" value={settings.currency} to="/settings/currency" />}
+          {money && <Row title="Use each hand’s real stakes" right={<Toggle label="Use each hand’s real stakes" checked={settings.handStakes} onChange={(handStakes) => settings.set({ handStakes })} />} />}
+          <Row title="Haptics" right={<Toggle label="Haptics" checked={settings.haptics} onChange={(haptics) => settings.set({ haptics })} />} />
+          <Row title="Sounds" right={<Toggle label="Sounds" checked={settings.sounds} onChange={(sounds) => settings.set({ sounds })} />} />
+        </List>
       </Section>
 
-      <Section title="Feedback" small>
-        <Group inset={58}>
-          <Row icon={<IconTile icon={Vibrate} color="var(--pink)" />} title="Haptics" right={<Toggle label="Haptics" checked={settings.haptics} onChange={(haptics) => settings.set({ haptics })} />} />
-          <Row icon={<IconTile icon={Volume2} color="var(--red)" />} title="Sounds" right={<Toggle label="Sounds" checked={settings.sounds} onChange={(sounds) => settings.set({ sounds })} />} />
-        </Group>
+      <Section title="Your hands">
+        <List>
+          <Row title="Sync & devices" sub="Pair with your computer, backups" to="/devices" />
+          {native ? <Row title="Full analysis on the web" sub="Import, stats, replayer, GTO solver" href={WEB_URL} /> : <Row title="Switch to the web version" sub="Import, stats, replayer, GTO solver" onClick={() => setUiMode('web')} />}
+        </List>
       </Section>
 
-      <Section title="Your Hands" small>
-        <Group inset={58}>
-          <Row icon={<IconTile icon={Laptop} color="var(--blue)" />} title="Sync & Devices" to="/devices" />
-          {native ? (
-            <Row icon={<IconTile icon={Monitor} color="var(--indigo)" />} title="Full Analysis on the Web" href={WEB_URL} />
-          ) : (
-            <Row icon={<IconTile icon={Monitor} color="var(--indigo)" />} title="Switch to Web Version" onClick={() => setUiMode('web')} />
-          )}
-        </Group>
+      <Section title="About" note={`Leakfinder ${__APP_VERSION__} · free and open source (AGPL-3.0) · GTO solver by Wataru Inariba`}>
+        <List>
+          <Row title="Privacy" sub="Everything stays on this device" href="privacy.html" />
+          <Row title="Source code" href="https://github.com/slamduncaan747/PokerAnalysis" />
+          <Row title="Reset puzzle progress" danger onClick={() => setConfirmReset(true)} chevron={false} />
+        </List>
       </Section>
-
-      <Section title="About" small footer={`Leakfinder ${__APP_VERSION__} · Free and open source (AGPL-3.0). GTO solver: postflop-solver by Wataru Inariba.`}>
-        <Group inset={58}>
-          <Row icon={<IconTile icon={Lock} color="var(--gray)" />} title="Privacy" sub="Your data stays on this device" href="privacy.html" />
-          <Row icon={<IconTile icon={BookOpen} color="var(--gray)" />} title="Source Code" href="https://github.com/slamduncaan747/PokerAnalysis" />
-        </Group>
-      </Section>
-
-      <Group>
-        <Row title="Reset Puzzle Progress" danger center onClick={() => setConfirmReset(true)} />
-      </Group>
 
       {confirmReset && (
         <ConfirmSheet
-          title="Your rating, history and streaks will be reset. This can’t be undone."
-          action="Reset Puzzle Progress"
+          title="Your rating, history and streaks go back to the start. This can’t be undone."
+          action="Reset progress"
           onCancel={() => setConfirmReset(false)}
           onConfirm={() => {
             haptic.error();
@@ -180,6 +181,6 @@ export default function Profile() {
           }}
         />
       )}
-    </Screen>
+    </TabScreen>
   );
 }

@@ -1,4 +1,4 @@
-import { FileUp, Laptop, Repeat2, TriangleAlert } from 'lucide-react';
+import { ChevronRight, FileUp, Laptop } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { mergeProgress } from '../cloud/merge.ts';
 import { haptic } from '../feedback.ts';
@@ -9,8 +9,8 @@ import { useOwnMistakesOf } from '../lib/training/queue.ts';
 import { useUnits } from '../settings.ts';
 import { useStore } from '../store.ts';
 import { PROGRESS_FILE } from '../transfer/device.ts';
-import { DRILL_ORDER, DrillTile, IconTile } from './meta.tsx';
-import { Badge, Bar, Button, Group, MCard, MiniCards, Ring, Row, Screen, Section } from './ui.tsx';
+import { DRILL_ORDER, DrillChip } from './meta.tsx';
+import { Bar, Btn, Chip, List, MCard, MiniCards, Ring, Row, Section, TabScreen, Tile } from './ui.tsx';
 
 /** Hand histories or a Leakfinder backup (.zip) from the Files app. */
 export async function importFromFiles(list: FileList | File[]) {
@@ -27,7 +27,7 @@ export async function importFromFiles(list: FileList | File[]) {
   if (files.length) await useStore.getState().importFiles(files);
 }
 
-/** A button that opens the Files picker. Render-prop free: style it like any button. */
+/** A button that opens the Files picker. */
 export function FilePicker({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLInputElement>(null);
   return (
@@ -51,9 +51,9 @@ function ImportProgress() {
   if (status.phase !== 'parsing' && status.phase !== 'analyzing') return null;
   const pct = status.total ? status.done / status.total : 0.05;
   return (
-    <div className="m-card m-fade p-4">
-      <div className="t-sub mb-2">{status.phase === 'parsing' ? 'Reading hand histories…' : `Analyzing ${status.done.toLocaleString()} of ${status.total.toLocaleString()} hands…`}</div>
-      <Bar value={pct} />
+    <div className="m-tile-flat m-fade p-4">
+      <div className="f-ui mb-2.5 font-semibold">{status.phase === 'parsing' ? 'Reading hand histories…' : `Grading ${status.done.toLocaleString()} of ${status.total.toLocaleString()} hands…`}</div>
+      <Bar value={pct} h={10} />
     </div>
   );
 }
@@ -61,34 +61,37 @@ function ImportProgress() {
 function Empty() {
   const loadDemo = useStore((s) => s.loadDemo);
   return (
-    <Screen title="My Game">
+    <TabScreen title="My Game">
       <ImportProgress />
-      <div className="flex flex-col items-center px-4 pt-6 text-center">
-        <div className="mb-6 flex">
-          <MCard card={51} w={64} style={{ transform: 'rotate(-8deg) translateY(4px)' }} />
-          <MCard card={46} w={64} style={{ marginLeft: -16, transform: 'rotate(7deg)' }} />
+      <div className="m-felt m-in overflow-hidden rounded-[26px] text-white" style={{ boxShadow: '0 4px 0 #0a3a23' }}>
+        <div className="relative flex h-[160px] items-center justify-center">
+          <div className="absolute left-[18%] top-[52%] -rotate-12"><Chip color="red" size={46}><span>5</span></Chip></div>
+          <div className="absolute left-[11%] top-[24%] rotate-6"><Chip color="black" size={40}><span>100</span></Chip></div>
+          <div className="flex">
+            <MCard card={51} w={64} style={{ transform: 'rotate(-10deg) translateY(4px)' }} />
+            <MCard card={46} w={64} style={{ marginLeft: -16, transform: 'rotate(8deg)' }} />
+          </div>
+          <div className="absolute right-[14%] top-[22%] rotate-12"><Chip color="green" size={44}><span>25</span></Chip></div>
+          <div className="absolute right-[20%] top-[56%] -rotate-6"><Chip color="purple" size={38}><span>500</span></Chip></div>
         </div>
-        <h2 className="t-title2">Practice Your Own Hands</h2>
-        <p className="t-body c-2 mt-2">If you play online, import your hand histories on your computer and send them here. Every decision gets graded, and your biggest leaks become drills.</p>
-        <div className="mt-7 flex w-full flex-col gap-2">
-          <Button to="/devices">
-            <Laptop size={19} /> Receive from Computer
-          </Button>
-          <FilePicker className="m-press m-btn m-btn-gray">
-            <FileUp size={19} /> Import a File
-          </FilePicker>
-          <Button
-            tone="plain"
-            onClick={() => {
-              void loadDemo();
-            }}
-          >
-            Try with Demo Hands
-          </Button>
-        </div>
-        <p className="t-foot c-2 mt-6">Puzzles and the Daily Hand work without any hands.</p>
       </div>
-    </Screen>
+      <div className="-mt-2 text-center">
+        <h2 className="f-display">Your game, graded</h2>
+        <p className="f-body t2 mt-2">Play online? Import your hand histories on your computer and send them here. Every decision gets a grade, and your biggest leaks turn into drills.</p>
+      </div>
+      <div className="flex flex-col gap-3">
+        <Btn to="/devices">
+          <Laptop size={20} strokeWidth={2.4} /> Receive from computer
+        </Btn>
+        <FilePicker className="m-btn3d b-outline">
+          <FileUp size={20} strokeWidth={2.4} /> Import a file
+        </FilePicker>
+        <Btn tone="ghost" onClick={() => void loadDemo()}>
+          Try it with demo hands
+        </Btn>
+      </div>
+      <p className="f-small t3 text-center">No hands? No problem — puzzles and the Daily Hand don’t need any.</p>
+    </TabScreen>
   );
 }
 
@@ -108,87 +111,100 @@ export default function MyGame() {
   if (!handsN || !summary) return <Empty />;
   const due = dueCards(progress).filter((c) => mistakes.some((m) => m.qid === `own-${c.handId}-${c.actionIndex}`)).length;
   const acc = summary.accuracy ?? 0;
+  const accColor = acc >= 85 ? 'var(--go)' : acc >= 75 ? 'var(--gold)' : 'var(--bad)';
   return (
-    <Screen title="My Game" eyebrow={`${summary.hands.toLocaleString()} hands analyzed`}>
+    <TabScreen title="My Game">
       <ImportProgress />
-      <div className="m-card m-in flex items-center gap-4 p-4">
-        <Ring value={acc / 100} size={84} stroke={9} color={acc >= 85 ? 'var(--green)' : acc >= 75 ? 'var(--orange)' : 'var(--red)'}>
-          <span className="t-rounded t-num text-[24px] font-bold">{Math.round(acc)}</span>
-        </Ring>
-        <div className="grid flex-1 grid-cols-1 gap-2">
-          <div>
-            <div className="t-foot c-2">Accuracy</div>
-            <div className="t-sub">Graded like a chess game review</div>
-          </div>
-          <div className="flex gap-5">
+      <div className="m-tile m-in p-5">
+        <div className="flex items-center gap-5">
+          <Ring value={acc / 100} size={96} stroke={11} color={accColor}>
+            <div className="text-center leading-none">
+              <div className="f-display f-num">{Math.round(acc)}</div>
+              <div className="f-tiny t3 mt-1">Accuracy</div>
+            </div>
+          </Ring>
+          <div className="flex flex-1 flex-col gap-3">
             <div>
-              <div className="t-foot c-2">Win rate</div>
-              <div className="t-headline t-num" style={{ color: summary.bb100 >= 0 ? 'var(--green-text)' : 'var(--red-text)' }}>
+              <div className="f-tiny t3">Win rate</div>
+              <div className="f-head f-num" style={{ color: summary.bb100 >= 0 ? 'var(--go)' : 'var(--bad)' }}>
                 {tx(`${Math.round(summary.bb100 * 10) / 10}bb`)}
-                <span className="t-foot c-2 font-normal">/100</span>
+                <span className="f-small t3 font-medium"> /100</span>
               </div>
             </div>
             <div>
-              <div className="t-foot c-2">Lost to mistakes</div>
-              <div className="t-headline t-num">
+              <div className="f-tiny t3">Lost to mistakes</div>
+              <div className="f-head f-num c-bad">
                 {fmt(summary.evLossPer100)}
-                <span className="t-foot c-2 font-normal">/100</span>
+                <span className="f-small t3 font-medium"> /100</span>
               </div>
             </div>
           </div>
         </div>
+        <div className="f-small t2 mt-4 font-normal">{summary.hands.toLocaleString()} hands, graded move by move like a chess game review.</div>
+        <Btn to="/practice?own=1&n=10" className="mt-4 uppercase tracking-wide">
+          {due ? `Review ${due > 99 ? '99+' : due} mistakes` : 'Review mistakes'}
+        </Btn>
       </div>
 
-      <Group inset={58}>
-        <Row icon={<IconTile icon={Repeat2} color="var(--indigo)" />} title="Review Mistakes" sub="Spaced repetition from your hands" right={<Badge n={due} />} to="/practice?own=1&n=10" />
-      </Group>
-
-      <Section title="Biggest Leaks" footer="Ranked by how much each one costs you per 100 hands.">
-        {summary.leaks.length === 0 ? (
-          <div className="m-group t-sub c-2 px-4 py-6 text-center">No recurring leaks found.</div>
-        ) : (
-          <Group inset={58}>
-            {summary.leaks.slice(0, 5).map((l) => (
-              <Row key={l.id} icon={<IconTile icon={TriangleAlert} color="var(--orange)" />} title={LEAKS[l.id].title} sub={tx(`${l.count} spots · −${Math.round(l.per100 * 10) / 10}bb/100`)} to={`/practice?leak=${l.id}&n=8`} />
-            ))}
-          </Group>
-        )}
+      <Section title="Biggest leaks" note="Ranked by what each one costs you per 100 hands.">
+        <div className="flex flex-col gap-3">
+          {summary.leaks.slice(0, 4).map((l, i) => (
+            <Tile key={l.id} to={`/practice?leak=${l.id}&n=8`} className="m-in flex items-center gap-3.5 p-4" style={{ ['--i' as string]: i }}>
+              <span className="f-head grid h-10 w-10 shrink-0 place-items-center rounded-full font-extrabold" style={{ background: i === 0 ? 'var(--bad)' : 'var(--s3)', color: i === 0 ? '#fff' : 'var(--text-2)' }}>
+                {i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="f-ui truncate font-bold">{LEAKS[l.id].title}</div>
+                <div className="f-small t2 font-normal">{tx(`${l.count} spots · −${Math.round(l.per100 * 10) / 10}bb/100`)}</div>
+              </div>
+              <span className="f-small c-gold font-bold">Drill</span>
+            </Tile>
+          ))}
+          {summary.leaks.length === 0 && <div className="m-tile-flat f-ui t2 px-4 py-6 text-center">No recurring leaks. Nice.</div>}
+        </div>
       </Section>
 
       <Section title="Drills">
-        <Group inset={58}>
-          {DRILL_ORDER.map((d) => {
+        <div className="grid grid-cols-2 gap-3">
+          {DRILL_ORDER.map((d, i) => {
             const m = mastery(progress, d);
-            return <Row key={d} icon={<DrillTile drill={d} />} title={DRILL_INFO[d].title} value={m.attempts ? `${m.score}%` : undefined} to={`/practice?drill=${d}&n=10`} />;
-          })}
-        </Group>
-      </Section>
-
-      <Section title="Costliest Hands">
-        <Group inset={86}>
-          {summary.worstHands.slice(0, 6).map((w) => {
-            const a = ordered.find((x) => x.handId === w.handId);
             return (
-              <Row
-                key={w.handId}
-                icon={a ? <MiniCards cards={a.heroCards} w={26} /> : undefined}
-                title={`${a?.heroPosition ?? ''} · Mistakes cost ${fmt(w.loss)}`}
-                sub={`Result ${w.netBB >= 0 ? '+' : '−'}${fmt(Math.abs(w.netBB))}`}
-                to={`/hand/${encodeURIComponent(w.handId)}`}
-              />
+              <Tile key={d} to={`/practice?drill=${d}&n=10`} className="m-in flex flex-col gap-3 p-4" style={{ ['--i' as string]: i }}>
+                <div className="flex items-start justify-between">
+                  <DrillChip drill={d} size={40} />
+                  {m.attempts > 0 && <span className="f-small f-num font-bold">{m.score}%</span>}
+                </div>
+                <div className="f-ui leading-tight font-bold">{DRILL_INFO[d].title}</div>
+                <Bar value={m.score / 100} h={6} color={m.attempts ? 'var(--go)' : 'transparent'} />
+              </Tile>
             );
           })}
-        </Group>
+        </div>
       </Section>
 
-      <Section title="Add Hands" footer="Full stats, the hand replayer and the GTO solver are in the web version on your computer.">
-        <Group inset={58}>
-          <Row icon={<IconTile icon={Laptop} color="var(--blue)" />} title="Sync with Computer" to="/devices" />
-          <FilePicker className="m-row-press block w-full text-left">
-            <Row icon={<IconTile icon={FileUp} color="var(--gray)" />} title="Import a File" chevron={false} />
-          </FilePicker>
-        </Group>
+      <Section title="Costliest hands">
+        <List>
+          {summary.worstHands.slice(0, 5).map((w) => {
+            const a = ordered.find((x) => x.handId === w.handId);
+            return <Row key={w.handId} icon={a ? <MiniCards cards={a.heroCards} w={26} /> : undefined} title={`${a?.heroPosition ?? ''} · lost ${fmt(w.loss)} to mistakes`} sub={`Result ${w.netBB >= 0 ? '+' : '−'}${fmt(Math.abs(w.netBB))}`} to={`/hand/${encodeURIComponent(w.handId)}`} />;
+          })}
+        </List>
       </Section>
-    </Screen>
+
+      <Section note="The full stats, replayer and GTO solver are in the web version on your computer.">
+        <div className="grid grid-cols-2 gap-3">
+          <Tile to="/devices" className="flex items-center gap-2 p-4">
+            <Laptop size={20} className="t2" />
+            <span className="f-ui flex-1 font-bold">Sync</span>
+            <ChevronRight size={18} className="t3" />
+          </Tile>
+          <FilePicker className="m-tile m-press flex w-full items-center gap-2 p-4 text-left">
+            <FileUp size={20} className="t2" />
+            <span className="f-ui flex-1 font-bold">Import</span>
+            <ChevronRight size={18} className="t3" />
+          </FilePicker>
+        </div>
+      </Section>
+    </TabScreen>
   );
 }
