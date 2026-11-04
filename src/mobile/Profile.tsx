@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { Check, Flame, Trophy, Target } from 'lucide-react';
+import { Check, Flame } from 'lucide-react';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { haptic } from '../feedback.ts';
@@ -73,18 +73,6 @@ function ConfirmSheet({ title, action, onConfirm, onCancel }: { title: string; a
   );
 }
 
-function Stat({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string | number; color: string }) {
-  return (
-    <div className="m-tile-flat flex-1 px-3 py-3 text-center">
-      <div className="flex justify-center" style={{ color }}>
-        {icon}
-      </div>
-      <div className="f-head f-num mt-1">{value}</div>
-      <div className="f-tiny t3">{label}</div>
-    </div>
-  );
-}
-
 export default function Profile() {
   const profile = usePuzzles((s) => s.profile);
   const resetProfile = usePuzzles((s) => s.resetProfile);
@@ -95,31 +83,34 @@ export default function Profile() {
   const { tier, next, progress, toNext } = tierOf(profile.rating);
   const themes = THEME_ORDER.map((t) => ({ t, ...(profile.themes[t] ?? { n: 0, ok: 0 }) })).filter((x) => x.n > 0);
   const native = Capacitor.isNativePlatform();
+  const streak = liveStreak(profile);
   const money = settings.units === 'money';
   return (
     <TabScreen title="Profile">
       <div className="m-tile m-in flex flex-col items-center px-5 pt-6 pb-5 text-center">
         <TierChip rating={profile.rating} size={92} />
         <div className="f-title mt-3 font-extrabold">{tier.name}</div>
-        <div className="f-ui t2">{tier.blurb}</div>
-        <div className="f-hero f-num mt-3">{profile.rating.toLocaleString()}</div>
+        <div className="f-hero f-num mt-1">{profile.rating.toLocaleString()}</div>
         {next && (
-          <div className="mt-3 w-full">
+          <div className="mt-4 w-full">
             <Bar value={progress} color="var(--gold)" h={12} />
             <div className="f-small t2 mt-2">
               <span className="f-num font-bold" style={{ color: 'var(--text)' }}>{toNext}</span> points to {next.name}
             </div>
           </div>
         )}
-        <div className="mt-5 w-full">
-          <RatingChart data={series.slice(-120)} h={90} />
+        <div className="f-ui t2 mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <span>{acc}% solved</span>
+          <span className="inline-flex items-center gap-1" style={{ color: streak ? '#ff9f43' : undefined }}>
+            <Flame size={15} fill={streak ? 'currentColor' : 'none'} /> {streak}-day streak
+          </span>
+          <span>Best {profile.peak.toLocaleString()}</span>
         </div>
-      </div>
-
-      <div className="flex gap-3">
-        <Stat icon={<Target size={20} strokeWidth={2.4} />} label="Solved" value={`${acc}%`} color="var(--go)" />
-        <Stat icon={<Flame size={20} fill="currentColor" />} label="Streak" value={liveStreak(profile)} color="#ff9f43" />
-        <Stat icon={<Trophy size={20} strokeWidth={2.4} />} label="Best" value={profile.peak.toLocaleString()} color="var(--gold)" />
+        {profile.games >= 10 && (
+          <div className="mt-5 w-full">
+            <RatingChart data={series.slice(-120)} h={96} />
+          </div>
+        )}
       </div>
 
       {themes.length > 0 && (

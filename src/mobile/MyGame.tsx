@@ -120,19 +120,19 @@ export default function MyGame() {
           <Ring value={acc / 100} size={96} stroke={11} color={accColor}>
             <div className="text-center leading-none">
               <div className="f-display f-num">{Math.round(acc)}</div>
-              <div className="f-tiny t3 mt-1">Accuracy</div>
+              <div className="f-small t3 mt-1">accuracy</div>
             </div>
           </Ring>
           <div className="flex flex-1 flex-col gap-3">
             <div>
-              <div className="f-tiny t3">Win rate</div>
+              <div className="f-small t2">Win rate</div>
               <div className="f-head f-num" style={{ color: summary.bb100 >= 0 ? 'var(--go)' : 'var(--bad)' }}>
                 {tx(`${Math.round(summary.bb100 * 10) / 10}bb`)}
                 <span className="f-small t3 font-medium"> /100</span>
               </div>
             </div>
             <div>
-              <div className="f-tiny t3">Lost to mistakes</div>
+              <div className="f-small t2">Lost to mistakes</div>
               <div className="f-head f-num c-bad">
                 {fmt(summary.evLossPer100)}
                 <span className="f-small t3 font-medium"> /100</span>
@@ -141,7 +141,7 @@ export default function MyGame() {
           </div>
         </div>
         <div className="f-small t2 mt-4 font-normal">{summary.hands.toLocaleString()} hands, graded move by move like a chess game review.</div>
-        <Btn to="/practice?own=1&n=10" className="mt-4 uppercase tracking-wide">
+        <Btn to="/practice?own=1&n=10" className="mt-4">
           {due ? `Review ${due > 99 ? '99+' : due} mistakes` : 'Review mistakes'}
         </Btn>
       </div>
@@ -157,7 +157,7 @@ export default function MyGame() {
                 <div className="f-ui truncate font-bold">{LEAKS[l.id].title}</div>
                 <div className="f-small t2 font-normal">{tx(`${l.count} spots · −${Math.round(l.per100 * 10) / 10}bb/100`)}</div>
               </div>
-              <span className="f-small c-gold font-bold">Drill</span>
+              <ChevronRight size={20} className="t3" />
             </Tile>
           ))}
           {summary.leaks.length === 0 && <div className="m-tile-flat f-ui t2 px-4 py-6 text-center">No recurring leaks. Nice.</div>}
@@ -165,21 +165,12 @@ export default function MyGame() {
       </Section>
 
       <Section title="Drills">
-        <div className="grid grid-cols-2 gap-3">
-          {DRILL_ORDER.map((d, i) => {
+        <List>
+          {DRILL_ORDER.map((d) => {
             const m = mastery(progress, d);
-            return (
-              <Tile key={d} to={`/practice?drill=${d}&n=10`} className="m-in flex flex-col gap-3 p-4" style={{ ['--i' as string]: i }}>
-                <div className="flex items-start justify-between">
-                  <DrillChip drill={d} size={40} />
-                  {m.attempts > 0 && <span className="f-small f-num font-bold">{m.score}%</span>}
-                </div>
-                <div className="f-ui leading-tight font-bold">{DRILL_INFO[d].title}</div>
-                <Bar value={m.score / 100} h={6} color={m.attempts ? 'var(--go)' : 'transparent'} />
-              </Tile>
-            );
+            return <Row key={d} icon={<DrillChip drill={d} size={40} />} title={DRILL_INFO[d].title} sub={DRILL_INFO[d].blurb} value={m.attempts ? `${m.score}%` : undefined} to={`/practice?drill=${d}&n=10`} />;
           })}
-        </div>
+        </List>
       </Section>
 
       <Section title="Costliest hands">

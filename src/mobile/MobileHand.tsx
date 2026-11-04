@@ -24,7 +24,7 @@ export default function MobileHand() {
     <PushScreen title="Hand review">
       <div className="m-felt m-rail relative overflow-hidden rounded-[24px] px-4 pt-5 pb-7 text-white">
         <div className="flex items-center justify-between">
-          <span className="f-tiny text-white/75">{new Date(hand.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {a.heroPosition}</span>
+          <span className="f-small font-semibold text-white/75">{new Date(hand.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {a.heroPosition}</span>
           <span className="f-head f-num" style={{ color: a.netBB >= 0 ? '#7dffb6' : '#ffb3b5' }}>
             {a.netBB >= 0 ? '+' : '−'}
             {fmt(Math.abs(a.netBB))}
@@ -39,7 +39,7 @@ export default function MobileHand() {
             <MCard card={a.heroCards[1]} w={56} style={{ marginLeft: -10, transform: 'rotate(6deg)' }} />
           </div>
           <div>
-            <div className="f-tiny text-white/70">Mistakes cost</div>
+            <div className="f-small text-white/70">Mistakes cost</div>
             <div className="f-head f-num">{fmt(a.evLossBB)}</div>
             {a.accuracy !== null && <div className="f-small text-white/70">Accuracy {Math.round(a.accuracy)}</div>}
           </div>
@@ -70,11 +70,11 @@ export default function MobileHand() {
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <div className="rounded-[12px] bg-black/20 px-3 py-2">
-                  <div className="f-tiny t3">You</div>
+                  <div className="f-small t3">You</div>
                   <div className="f-ui font-semibold">{tx(mine?.label ?? d.heroLabel)}</div>
                 </div>
                 <div className="rounded-[12px] bg-black/20 px-3 py-2">
-                  <div className="f-tiny t3">Best</div>
+                  <div className="f-small t3">Best</div>
                   <div className="f-ui font-semibold" style={{ color: same ? 'var(--text)' : 'var(--go)' }}>
                     {tx(best?.label ?? d.bestKey)}
                   </div>

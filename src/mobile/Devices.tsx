@@ -108,7 +108,7 @@ export default function Devices() {
 
       {phase.k === 'hosting' && (
         <div className="m-tile-flat m-fade flex flex-col items-center gap-2 p-6 text-center">
-          <div className="f-tiny t2">Type this on your other device</div>
+          <div className="f-small t2">Type this on your other device</div>
           <div className="f-num text-[46px] font-extrabold tracking-[0.15em]">{pretty(phase.code)}</div>
           <div className="f-small t2 flex items-center gap-1.5">
             <Loader2 size={15} className="animate-spin" /> {phase.ready ? 'Waiting for the other device…' : 'Getting a code…'}

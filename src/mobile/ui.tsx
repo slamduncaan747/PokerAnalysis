@@ -121,7 +121,7 @@ export function MiniCards({ cards, w = 22 }: { cards: readonly Card[]; w?: numbe
 }
 
 /* --------------------------------------------------------------- controls */
-export type BtnTone = 'go' | 'gold' | 'bad' | 'blue' | 'amber' | 'slate' | 'ghost' | 'outline';
+export type BtnTone = 'go' | 'gold' | 'bad' | 'blue' | 'amber' | 'slate' | 'ghost' | 'outline' | 'card';
 
 /** The 3D button: colour, lip, sinks when pressed. */
 export function Btn({ children, onClick, to, tone = 'go', className = '', disabled, style }: { children: ReactNode; onClick?: () => void; to?: string; tone?: BtnTone; className?: string; disabled?: boolean; style?: CSSProperties }) {

@@ -23,11 +23,21 @@ Strava / Apple Fitness. None of their visuals are copied; these are the principl
 - **Room:** `#0b0e17` background, `#141927` surface, `#1c2235` raised, hairline `rgba(255,255,255,.07)`.
 - **Text:** `#f4f6fc`, secondary `#99a2bd`, tertiary `#5d6580`.
 - **Felt:** radial `#23935b → #0f5434`, rail `#0a2a1c`.
-- **Signal colours (each with a darker lip):** go `#2bd67b/#1a9c57`, gold `#ffc233/#d49a00`, wrong `#ff5a5f/#c93c41`, call blue `#3d7bff/#2a58c4`, raise amber `#ffb020/#cc8500`.
-- **Chips (casino denominations):** white `#e8ecf5`, red `#e5484d`, green `#22a565`, black `#2a2f3a`, purple `#8b5cf6`, gold `#f5b301`.
+- **Colour jobs (each with a darker lip):** green `#2bd67b` = the primary button and "correct"; red `#ff5a5f` = "wrong"; gold `#ffc233` = rating, rank and +/− changes only. Poker actions (Fold / Call / Raise) are all the same neutral raised button until you answer, so nothing hints at the answer.
+- **Chips (casino denominations):** white, red, green, black, purple, gold (plus blue and orange, which real casinos use too). Themes and drills use these; nothing else.
 - **Type:** Rubik (bundled) — 800/900 for numbers and titles, 500–600 for UI, 400 for body. Sizes 44/32/24/20/17/15/13.
 - **Shape:** radius 12 (small), 18 (tiles), 24 (hero); lip 4px on buttons, 3px on tiles.
 - **Motion:** springy (cubic-bezier(.2,1.2,.4,1)) for things that appear; 120 ms press; cards deal in sequence; feedback banner slides up.
+
+## Rules learned from the first review
+
+- At most one small label per screen; no tracked-uppercase micro-labels, no "·" chains.
+- The verdict is one sentence of 12 words or fewer; details live under "Why?".
+- Never reveal a puzzle's theme before the answer.
+- One big number instead of rows of identical stat boxes.
+- No chart until there is enough data to make it meaningful (10 rated games).
+- Lists for many items (themes, drills); tiles only for a few important things.
+- The table keeps a fixed height so nothing jumps between puzzles.
 
 ## Review checklist (run on every screen)
 
