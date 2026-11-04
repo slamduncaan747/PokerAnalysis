@@ -1,4 +1,5 @@
-import { Check, Lock, X } from 'lucide-react';
+import { Lock } from 'lucide-react';
+import { Seal } from './Today.tsx';
 import { liveStreak } from '../puzzles/engine.ts';
 import { TIERS, tierOf } from '../puzzles/ranks.ts';
 import { usePuzzles } from '../puzzles/store.ts';
@@ -46,7 +47,7 @@ export default function PuzzlesTab() {
   const acc = profile.games ? Math.round((profile.solved / profile.games) * 100) : null;
   const { tier, next, toNext, progress } = tierOf(profile.rating);
   return (
-    <TabScreen title="Puzzles" right={<StreakPill n={liveStreak(profile)} />}>
+    <TabScreen title="Puzzles" right={liveStreak(profile) > 0 ? <StreakPill n={liveStreak(profile)} /> : undefined}>
       <div className="m-tile m-in p-5">
         <div className="flex items-center gap-4">
           <TierChip rating={profile.rating} size={64} />
@@ -94,9 +95,7 @@ export default function PuzzlesTab() {
               <Row
                 key={`${a.id}-${a.t}-${i}`}
                 icon={
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full" style={{ background: a.ok ? 'var(--go)' : 'var(--bad)', color: a.ok ? 'var(--go-ink)' : '#fff' }}>
-                    {a.ok ? <Check size={17} strokeWidth={3.4} /> : <X size={17} strokeWidth={3.4} />}
-                  </span>
+                  <Seal ok={a.ok} size={30} />
                 }
                 title={THEME_META[a.th].name}
                 sub={`${a.mode === 'daily' ? 'Daily Hand, ' : ''}puzzle ${a.pr}, ${ago(a.t)}`}

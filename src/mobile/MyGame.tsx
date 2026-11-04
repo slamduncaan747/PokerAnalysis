@@ -150,7 +150,7 @@ export default function MyGame() {
         <div className="flex flex-col gap-3">
           {summary.leaks.slice(0, 4).map((l, i) => (
             <Tile key={l.id} to={`/practice?leak=${l.id}&n=8`} className="m-in flex items-center gap-3.5 p-4" style={{ ['--i' as string]: i }}>
-              <span className="f-head grid h-10 w-10 shrink-0 place-items-center rounded-full font-extrabold" style={{ background: i === 0 ? 'var(--bad)' : 'var(--s3)', color: i === 0 ? '#fff' : 'var(--text-2)' }}>
+              <span className="f-head grid h-10 w-10 shrink-0 place-items-center rounded-full font-extrabold" style={{ background: i === 0 ? '#4a1a1e' : 'var(--s3)', color: i === 0 ? 'var(--bad)' : 'var(--text-2)' }}>
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">

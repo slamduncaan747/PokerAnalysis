@@ -1,4 +1,5 @@
-import '@fontsource-variable/rubik';
+import '@fontsource-variable/cormorant-garamond';
+import '@fontsource-variable/inter';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { HashRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { getCloudConfig } from '../cloud/config.ts';
@@ -24,17 +25,17 @@ const PuzzleReview = lazy(() => import('./runs.tsx').then((m) => ({ default: m.P
 function CardBackIcon({ on }: { on: boolean }) {
   return (
     <svg width="26" height="26" viewBox="0 0 26 26">
-      <rect x="6" y="2" width="14" height="22" rx="3" fill={on ? '#c8343c' : '#2a3150'} stroke={on ? '#fff' : '#5d6580'} strokeWidth="2" />
-      <path d="M13 7l3.5 6-3.5 6-3.5-6z" fill={on ? 'rgba(255,255,255,.55)' : '#5d6580'} />
+      <rect x="6" y="2" width="14" height="22" rx="2.5" fill={on ? '#4e1119' : '#1e2420'} stroke={on ? '#f2ece0' : '#4a4f49'} strokeWidth="1.6" />
+      <circle cx="13" cy="13" r="3.2" fill="none" stroke={on ? '#d4b26a' : '#4a4f49'} strokeWidth="1" />
     </svg>
   );
 }
 function TwoCardsIcon({ on }: { on: boolean }) {
   return (
     <svg width="28" height="26" viewBox="0 0 28 26">
-      <rect x="3" y="4" width="13" height="18" rx="2.5" transform="rotate(-10 9.5 13)" fill={on ? '#ffffff' : '#2a3150'} stroke={on ? '#0b0e17' : '#5d6580'} strokeWidth="1.5" />
-      <rect x="11" y="3" width="13" height="18" rx="2.5" transform="rotate(8 17.5 12)" fill={on ? '#ffffff' : '#2a3150'} stroke={on ? '#0b0e17' : '#5d6580'} strokeWidth="1.5" />
-      <text x="18" y="16" textAnchor="middle" fontSize="9" fontWeight="800" fill={on ? '#e5323b' : '#5d6580'}>♥</text>
+      <rect x="3" y="4" width="13" height="18" rx="2.2" transform="rotate(-10 9.5 13)" fill={on ? '#fbf8f1' : '#1e2420'} stroke={on ? '#0a0f0d' : '#4a4f49'} strokeWidth="1.4" />
+      <rect x="11" y="3" width="13" height="18" rx="2.2" transform="rotate(8 17.5 12)" fill={on ? '#fbf8f1' : '#1e2420'} stroke={on ? '#0a0f0d' : '#4a4f49'} strokeWidth="1.4" />
+      <text x="18" y="16" textAnchor="middle" fontSize="9" fontWeight="700" fill={on ? '#b3261e' : '#4a4f49'}>♥</text>
     </svg>
   );
 }
@@ -43,7 +44,7 @@ function TabIcon({ tab, on }: { tab: string; on: boolean }) {
   const rating = usePuzzles((s) => s.profile.rating);
   if (tab === '/') return <CardBackIcon on={on} />;
   if (tab === '/game') return <TwoCardsIcon on={on} />;
-  const dim = on ? undefined : { filter: 'grayscale(1) brightness(.55)' };
+  const dim = on ? undefined : { filter: 'grayscale(1) brightness(.45)' };
   if (tab === '/puzzles')
     return (
       <span style={dim}>

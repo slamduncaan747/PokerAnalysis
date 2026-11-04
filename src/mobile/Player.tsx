@@ -20,7 +20,7 @@ const STREET_NAME: Record<string, string> = { preflop: 'Preflop', flop: 'Flop', 
 /** A position puck on the felt (villain's seat, and yours). */
 function Puck({ pos, size = 46 }: { pos: string; size?: number }) {
   return (
-    <div className="grid shrink-0 place-items-center rounded-full bg-[#0b2b1d] font-extrabold" style={{ width: size, height: size, fontSize: size * 0.3, boxShadow: '0 0 0 2px rgba(255,255,255,.18), 0 4px 10px rgba(0,0,0,.35)' }}>
+    <div className="f-serif grid shrink-0 place-items-center rounded-full bg-[#0b2a1d] font-bold" style={{ width: size, height: size, fontSize: size * 0.38, boxShadow: 'inset 0 0 0 1px rgba(212,178,106,.55), 0 4px 10px rgba(0,0,0,.4)' }}>
       {pos}
     </div>
   );
@@ -37,18 +37,18 @@ function Felt({ v, top, shake, celebrate }: { v: SpotView; top: ReactNode; shake
   const heroW = Math.min(100, Math.round(boardW * 1.5));
   const isBet = !!v.villainAction && !/^check/i.test(v.villainAction);
   return (
-    <div className={`m-felt m-rail relative text-white ${shake ? 'm-shake' : ''}`} style={{ borderRadius: '0 0 40px 40px' }}>
+    <div className={`m-felt m-rail relative ${shake ? 'm-shake' : ''}`} style={{ borderRadius: '0 0 44px 44px', color: 'var(--text)' }}>
       {celebrate && <Confetti />}
       <div className="m-safe-top" />
       {top}
       {v.kind === 'math' ? (
         <div className="flex flex-col items-center gap-2 px-5 pt-8 pb-12">
           <ChipPile colors={['green', 'black', 'red']} size={34} />
-          <div className="f-ui mt-2 text-white/70">The pot</div>
+          <div className="f-ui mt-2" style={{ color: 'rgba(242,236,224,.7)' }}>The pot</div>
           <div className="f-hero f-num">{fmt(v.centerPotBB)}</div>
-          <div className="m-pop mt-3 flex items-center gap-2 rounded-full bg-black/35 py-1.5 pr-3.5 pl-2">
-            <ChipPile colors={['gold', 'red']} size={20} />
-            <span className="f-ui font-bold">Villain bets {fmt(v.toCallBB)}</span>
+          <div className="m-pop mt-3 flex items-center gap-2 rounded-full bg-black/30 py-1.5 pr-3.5 pl-2.5">
+            <ChipPile colors={['red', 'gold', 'red']} size={18} />
+            <span className="f-ui font-semibold">Villain bets {fmt(v.toCallBB)}</span>
           </div>
         </div>
       ) : (
@@ -64,26 +64,25 @@ function Felt({ v, top, shake, celebrate }: { v: SpotView; top: ReactNode; shake
                   <Puck pos={v.villainPos} />
                 </div>
                 {v.villainAction && (
-                  <div className="m-pop flex items-center gap-2 rounded-full bg-black/35 py-1.5 pr-3.5 pl-2">
-                    {isBet ? <ChipPile colors={['gold', 'red']} size={20} /> : <span className="ml-1 h-2 w-2 rounded-full bg-white/60" />}
-                    <span className="f-ui font-bold">{v.villainAction}</span>
+                  <div className="m-pop flex items-center gap-2 rounded-full bg-black/30 py-1.5 pr-3.5 pl-2.5">
+                    {isBet ? <ChipPile colors={['red', 'gold', 'red']} size={18} /> : <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'rgba(242,236,224,.6)' }} />}
+                    <span className="f-ui font-semibold">{v.villainAction}</span>
                   </div>
                 )}
               </>
             ) : (
-              <div className="f-ui rounded-full bg-black/25 px-3.5 py-1.5 font-semibold text-white/85">Folded to you</div>
+              <div className="f-ui rounded-full bg-black/25 px-3.5 py-1.5 font-medium" style={{ color: 'rgba(242,236,224,.85)' }}>Folded to you</div>
             )}
           </div>
-          <div className="mt-3 flex items-center gap-2 rounded-full bg-black/30 py-1.5 pr-3.5 pl-2">
-            <ChipPile colors={['green', 'black', 'red']} size={20} />
-            <span className="f-ui f-num font-bold">Pot {fmt(v.centerPotBB)}</span>
+          <div className="f-head f-num mt-2" style={{ color: 'rgba(242,236,224,.92)' }}>
+            Pot {fmt(v.centerPotBB)}
           </div>
           <div className="mt-3.5 flex gap-[7px]">
             {[0, 1, 2, 3, 4].map((i) =>
               v.board[i] !== undefined ? (
                 <MCard key={`${v.id}-${i}`} card={v.board[i]} w={boardW} className="m-deal" style={{ ['--i' as string]: i }} />
               ) : (
-                <div key={i} className="shrink-0 rounded-[8px]" style={{ width: boardW, height: Math.round(boardW * 1.4), background: 'rgba(0,0,0,.1)', boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,.06)' }} />
+                <div key={i} className="shrink-0 rounded-[7px]" style={{ width: boardW, height: Math.round(boardW * 1.42), background: 'rgba(0,0,0,.1)', boxShadow: 'inset 0 0 0 1px rgba(242,236,224,.07)' }} />
               ),
             )}
           </div>
@@ -142,12 +141,12 @@ function History({ lines }: { lines: string[] }) {
 type OptState = 'idle' | 'chosen-ok' | 'chosen-bad' | 'correct' | 'faded';
 
 function OptionButton({ o, state, onClick }: { o: ViewOption; state: OptState; onClick: () => void }) {
-  const tone: BtnTone = state === 'chosen-ok' || state === 'correct' ? 'go' : state === 'chosen-bad' ? 'bad' : 'card';
+  const tone: BtnTone = state === 'chosen-ok' || state === 'correct' ? 'ok' : state === 'chosen-bad' ? 'bad' : 'card';
   return (
     <Btn tone={tone} onClick={onClick} disabled={state !== 'idle'} className={`keep !flex-col !gap-0 !px-2 transition-opacity ${state === 'faded' ? 'opacity-30' : ''}`} style={{ minHeight: 60 }}>
-      <span className="f-num text-[17px] leading-tight">{o.label}</span>
-      {o.sub && <span className="f-num mt-0.5 text-[13px] font-medium opacity-65">{o.sub}</span>}
-      {(state === 'chosen-ok' || state === 'correct') && <Check size={16} strokeWidth={3.4} className="m-pop absolute top-1.5 right-2" />}
+      <span className="f-num text-[16px] leading-tight font-semibold">{o.label}</span>
+      {o.sub && <span className="f-num mt-0.5 text-[12.5px] font-medium" style={{ color: 'var(--text-2)' }}>{o.sub}</span>}
+      {(state === 'chosen-ok' || state === 'correct') && <Check size={15} strokeWidth={3} className="m-pop absolute top-2 right-2.5" style={{ color: 'var(--go)' }} />}
     </Btn>
   );
 }
@@ -172,49 +171,57 @@ function Dock({ options, chosen, outcome, onChoose }: { options: ViewOption[]; c
   );
 }
 
-const PRAISE = ['Nailed it!', 'Sharp!', 'Great read!', 'That’s the play!', 'Spot on!'];
-const MISS = ['Not quite', 'So close', 'Tough one'];
+const PRAISE = ['Well played.', 'Nicely done.', 'Good read.', 'That’s the play.', 'Spot on.'];
+const MISS = ['Not quite.', 'Not this time.', 'Close, but no.'];
 
 /** The answer: a full-width banner in the result colour. Verdict, one sentence, Continue. */
 function Feedback({ o, seed, onNext, nextLabel, real }: { o: Outcome; seed: number; onNext: () => void; nextLabel: string; real?: SpotView['real'] }) {
   const { fmt } = useUnits(real);
   const [open, setOpen] = useState(false);
   const color = o.brilliant ? 'var(--gold)' : o.ok ? 'var(--go)' : 'var(--bad)';
-  const bg = o.brilliant ? '#2a2210' : o.ok ? 'var(--go-bg)' : 'var(--bad-bg)';
-  const title = o.brilliant ? 'Brilliant!' : o.ok ? PRAISE[seed % PRAISE.length] : MISS[seed % MISS.length];
+  const bg = o.ok || o.brilliant ? 'linear-gradient(180deg,#123a29,#0c2a1e)' : 'linear-gradient(180deg,#36141a,#250d11)';
+  const title = o.brilliant ? 'Brilliant.' : o.ok ? PRAISE[seed % PRAISE.length] : MISS[seed % MISS.length];
   const evs = o.bars.filter((b) => b.ev !== undefined);
   const hasMore = !!o.idea || o.bars.length > 0 || (o.lines?.length ?? 0) > 0 || o.facts.length > 0;
   return (
-    <div className="m-up fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[600px]" style={{ background: bg, boxShadow: `0 -2px 0 ${color}, 0 -20px 50px rgba(0,0,0,.5)`, borderRadius: '24px 24px 0 0' }}>
-      <div className="m-noscrollbar max-h-[64dvh] overflow-y-auto px-5 pt-5">
-        <div className="flex items-center gap-3">
-          <div className="m-pop grid h-11 w-11 shrink-0 place-items-center rounded-full" style={{ background: color, color: o.brilliant ? 'var(--gold-ink)' : o.ok ? 'var(--go-ink)' : '#fff' }}>
-            {o.brilliant ? <Sparkles size={22} strokeWidth={2.6} /> : o.ok ? <Check size={24} strokeWidth={3.4} /> : <X size={24} strokeWidth={3.4} />}
+    <div className="m-up fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[600px]" style={{ background: bg, boxShadow: '0 -1px 0 rgba(212,178,106,.5), 0 -24px 60px rgba(0,0,0,.6)', borderRadius: '26px 26px 0 0' }}>
+      <div className="m-noscrollbar max-h-[64dvh] overflow-y-auto px-6 pt-6">
+        <div className="flex items-center gap-3.5">
+          <div
+            className="m-pop grid h-12 w-12 shrink-0 place-items-center rounded-full"
+            style={
+              o.ok || o.brilliant
+                ? { background: 'radial-gradient(circle at 40% 35%,#ecd598,#c7a253 60%,#9c7c3c)', color: '#2a1f0a', boxShadow: '0 3px 8px rgba(0,0,0,.4), inset 0 0 0 2px rgba(255,255,255,.25)' }
+                : { background: '#4a1a1e', color: 'var(--bad)', boxShadow: 'inset 0 0 0 1.5px rgba(229,135,124,.6)' }
+            }
+          >
+            {o.brilliant ? <Sparkles size={22} strokeWidth={2.2} /> : o.ok ? <Check size={24} strokeWidth={3} /> : <X size={22} strokeWidth={3} />}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="f-title font-extrabold" style={{ color }}>
-              {title}
-            </div>
-            {o.tag && <div className="f-small t2 truncate">{o.tag}</div>}
+            <div className="f-title">{title}</div>
+            {o.tag && <div className="f-small t2 mt-0.5 truncate">{o.tag}</div>}
           </div>
           {o.delta !== undefined && (
-            <span className="m-pop f-num shrink-0 rounded-full px-3 py-1 text-[18px] font-extrabold" style={{ ['--i' as string]: 2, background: o.delta >= 0 ? 'var(--gold)' : 'rgba(255,255,255,.1)', color: o.delta >= 0 ? 'var(--gold-ink)' : 'var(--text-2)' }}>
-              {o.delta >= 0 ? '+' : '−'}
-              {Math.abs(o.delta)}
-            </span>
+            <div className="m-pop shrink-0 text-right" style={{ ['--i' as string]: 2 }}>
+              <div className="f-serif f-num text-[28px] leading-none font-bold" style={{ color: o.delta >= 0 ? 'var(--gold)' : 'var(--text-2)' }}>
+                {o.delta >= 0 ? '+' : '−'}
+                {Math.abs(o.delta)}
+              </div>
+              <div className="f-small t2">rating</div>
+            </div>
           )}
         </div>
         {!o.ok && (
-          <div className="f-ui mt-3">
-            Best play: <span className="font-bold">{o.bestLabel}</span>
+          <div className="f-ui mt-4">
+            Best play: <span className="font-semibold" style={{ color }}>{o.bestLabel}</span>
           </div>
         )}
-        {o.headline && <p className="f-body mt-2 font-medium text-white/90">{o.headline}</p>}
+        {o.headline && <p className="f-body mt-3" style={{ color: 'rgba(242,236,224,.92)' }}>{o.headline}</p>}
         {open && (
           <div className="m-fade mt-4 flex flex-col gap-4 pb-1">
-            {o.idea && <p className="f-ui font-normal text-white/80">{o.idea}</p>}
+            {o.idea && <p className="f-ui font-normal" style={{ color: 'rgba(242,236,224,.78)' }}>{o.idea}</p>}
             {o.lines && o.lines.length > 0 && (
-              <ul className="f-ui flex flex-col gap-2 font-normal text-white/80">
+              <ul className="f-ui flex flex-col gap-2 font-normal" style={{ color: 'rgba(242,236,224,.78)' }}>
                 {o.lines.map((l, i) => (
                   <li key={i}>{l}</li>
                 ))}
@@ -226,7 +233,7 @@ function Feedback({ o, seed, onNext, nextLabel, real }: { o: Outcome; seed: numb
                   const isBest = o.correctKeys.includes(b.key);
                   return (
                     <div key={b.key} className="flex items-center justify-between gap-3 px-3.5 py-2.5" style={i ? { boxShadow: 'inset 0 1px 0 rgba(255,255,255,.06)' } : undefined}>
-                      <span className={`f-ui truncate ${isBest ? 'font-bold' : 'text-white/75'}`}>
+                      <span className={`f-ui truncate ${isBest ? 'font-semibold' : 't2'}`}>
                         {isBest && <Check size={15} strokeWidth={3.2} className="mr-1.5 -mt-0.5 inline" style={{ color: 'var(--go)' }} />}
                         {b.label}
                         {b.key === o.chosenKey && <span className="t2 font-medium"> · your pick</span>}
@@ -254,8 +261,8 @@ function Feedback({ o, seed, onNext, nextLabel, real }: { o: Outcome; seed: numb
         )}
         {hasMore && (
           <button
-            className="m-press f-ui mt-3 flex items-center gap-1 font-bold"
-            style={{ color }}
+            className="m-press f-ui mt-3 flex items-center gap-1 font-semibold"
+            style={{ color: 'var(--gold)' }}
             onClick={() => {
               haptic.tap();
               setOpen((x) => !x);
@@ -265,8 +272,8 @@ function Feedback({ o, seed, onNext, nextLabel, real }: { o: Outcome; seed: numb
           </button>
         )}
       </div>
-      <div className="m-safe-bottom px-5 pt-4 pb-4">
-        <Btn tone={o.brilliant || o.ok ? 'go' : 'bad'} onClick={onNext}>
+      <div className="m-safe-bottom px-6 pt-5 pb-4">
+        <Btn tone="go" onClick={onNext}>
           {nextLabel}
         </Btn>
       </div>
@@ -329,35 +336,36 @@ export function Player({
       <div className="flex h-[52px] items-center gap-3">
         <button
           aria-label="Close"
-          className="m-press grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/25"
+          className="m-press -ml-1 grid h-9 w-9 shrink-0 place-items-center rounded-full"
+          style={{ color: 'rgba(242,236,224,.85)' }}
           onClick={() => {
             haptic.tap();
             onClose();
           }}
         >
-          <X size={20} strokeWidth={2.8} />
+          <X size={22} strokeWidth={2} />
         </button>
         {progress ? (
           <div className="flex flex-1 gap-1.5">
             {Array.from({ length: progress.n }, (_, i) => {
               const r = progress.results?.[i];
               return (
-                <div key={i} className="h-3 flex-1 overflow-hidden rounded-full bg-black/25">
-                  <div className="h-full rounded-full transition-all duration-500" style={{ width: r === undefined ? (i === progress.i ? '35%' : '0%') : '100%', background: r === true ? 'var(--go)' : r === false ? 'var(--bad)' : 'rgba(255,255,255,.6)' }} />
+                <div key={i} className="h-[3px] flex-1 overflow-hidden rounded-full" style={{ background: 'rgba(242,236,224,.15)' }}>
+                  <div className="h-full rounded-full transition-all duration-500" style={{ width: r === undefined ? (i === progress.i ? '35%' : '0%') : '100%', background: r === true ? 'var(--gold)' : r === false ? 'var(--bad)' : 'rgba(242,236,224,.7)' }} />
                 </div>
               );
             })}
           </div>
         ) : (
           <div className="min-w-0 flex-1 text-center">
-            <div className="f-ui truncate font-bold">{title}</div>
-            {subtitle && <div className="f-small truncate text-white/65">{subtitle}</div>}
+            <div className="f-caps truncate" style={{ color: 'rgba(242,236,224,.8)' }}>{title}</div>
+            {subtitle && <div className="f-small mt-0.5 truncate" style={{ color: 'rgba(242,236,224,.6)' }}>{subtitle}</div>}
           </div>
         )}
         <div className="flex min-w-9 shrink-0 justify-end">{right}</div>
       </div>
       {progress && (
-        <div className="f-small -mt-1 text-center font-semibold text-white/75">
+        <div className="f-caps mt-1 text-center" style={{ color: 'rgba(242,236,224,.75)' }}>
           {title}
           {subtitle ? ` · ${subtitle}` : ''}
         </div>
@@ -371,7 +379,7 @@ export function Player({
           <Felt v={view} top={top} shake={!!outcome && !outcome.ok} celebrate={!!outcome?.brilliant} />
           <div className="px-5" style={{ marginTop: view.kind === 'table' ? 48 : 20 }}>
             <div className="text-center">
-              <div className="f-title">{prompt}</div>
+              <div className="f-title" style={{ fontSize: 32 }}>{prompt}</div>
               <div className="f-ui t2 mt-1">{[view.kind === 'math' ? undefined : STREET_NAME[view.street], view.kind === 'table' ? view.handLabel : undefined].filter(Boolean).join(' · ')}</div>
             </div>
             <div className="mt-4">

@@ -101,7 +101,7 @@ export default function Profile() {
         )}
         <div className="f-ui t2 mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
           <span>{acc}% solved</span>
-          <span className="inline-flex items-center gap-1" style={{ color: streak ? '#ff9f43' : undefined }}>
+          <span className="inline-flex items-center gap-1" style={{ color: streak ? 'var(--gold)' : undefined }}>
             <Flame size={15} fill={streak ? 'currentColor' : 'none'} /> {streak}-day streak
           </span>
           <span>Best {profile.peak.toLocaleString()}</span>

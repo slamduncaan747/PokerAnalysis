@@ -1,4 +1,3 @@
-import { Check, Flame, Share, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { haptic, sound } from '../feedback.ts';
@@ -9,14 +8,14 @@ import { mastery, recordAttempt as recordTraining } from '../lib/training/progre
 import { buildQueue, useOwnMistakesOf, type QueueItem } from '../lib/training/queue.ts';
 import { DAILY_TIERS, dailySet, dayNumber, liveStreak, pickPuzzle, recentIds, shareText } from '../puzzles/engine.ts';
 import { usePuzzles } from '../puzzles/store.ts';
-import { tierOf } from '../puzzles/ranks.ts';
 import type { Puzzle, Theme } from '../puzzles/types.ts';
 import { useUnits } from '../settings.ts';
 import { useStore } from '../store.ts';
 import { Player } from './Player.tsx';
 import { puzzleOutcome, puzzleView, questionOutcome, questionView } from './spot.ts';
 import { DrillChip, THEME_META } from './meta.tsx';
-import { Bar, Btn, Confetti, Countdown, RatingPill, TierChip } from './ui.tsx';
+import { Bar, Btn, Confetti, Countdown, RatingPill } from './ui.tsx';
+import { Seal } from './Today.tsx';
 
 export function useBank() {
   const bank = usePuzzles((s) => s.bank);
@@ -72,8 +71,8 @@ function RatedRunInner({ theme }: { theme?: Theme }) {
     <Player
       key={puzzle.id}
       view={view}
-      title={theme ? THEME_META[theme].name : 'Rated puzzle'}
-      subtitle={`Puzzle rating ${puzzle.rating.toLocaleString()}${run >= 2 ? ` · ${run} in a row` : ''}`}
+      title={theme ? THEME_META[theme].name : 'Rated'}
+      subtitle={`Puzzle ${puzzle.rating.toLocaleString()}${run >= 2 ? ` · ${run} in a row` : ''}`}
       right={<RatingPill rating={rating} />}
       onClose={() => nav(-1)}
       onAnswer={(key) => {
@@ -145,17 +144,6 @@ async function share(text: string): Promise<'shared' | 'copied' | 'failed'> {
   }
 }
 
-/** One of today's three hands, flipped to a tick or a cross. */
-function ResultCard({ ok, i }: { ok: boolean; i: number }) {
-  return (
-    <div className="m-flip grid h-[92px] w-[66px] place-items-center rounded-[9px] bg-white" style={{ ['--i' as string]: i, transform: `rotate(${(i - 1) * 6}deg)`, boxShadow: '0 8px 18px rgba(0,0,0,.35)' }}>
-      <div className="grid h-11 w-11 place-items-center rounded-full" style={{ background: ok ? 'var(--go)' : 'var(--bad)', color: ok ? 'var(--go-ink)' : '#fff' }}>
-        {ok ? <Check size={26} strokeWidth={3.6} /> : <X size={26} strokeWidth={3.6} />}
-      </div>
-    </div>
-  );
-}
-
 function DailyDone({ day, results }: { day: number; results: boolean[] }) {
   const nav = useNavigate();
   const profile = usePuzzles((s) => s.profile);
@@ -168,39 +156,44 @@ function DailyDone({ day, results }: { day: number; results: boolean[] }) {
       sound.fanfare();
     } else haptic.success();
   }, [score]);
-  const headline = score === 3 ? 'Perfect day' : score === 2 ? 'Two for three' : score === 1 ? 'One for three' : 'Tough day';
-  const { tier } = tierOf(profile.rating);
+  const headline = score === 3 ? 'A perfect day.' : score === 2 ? 'Two for three.' : score === 1 ? 'One for three.' : 'Not today.';
+  const fig = (value: React.ReactNode, label: string) => (
+    <div className="flex-1 text-center">
+      <div className="f-serif f-num text-[32px] leading-none font-semibold">{value}</div>
+      <div className="f-small t2 mt-1.5 font-normal">{label}</div>
+    </div>
+  );
   return (
     <div className="m-app fixed inset-0 z-30 flex flex-col overflow-y-auto">
       <div className="m-safe-top" />
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-6">
-        {/* The thing you share: today's result as a card. */}
-        <div className="m-felt m-pop relative overflow-hidden rounded-[28px] px-5 pt-5 pb-6 text-white" style={{ boxShadow: '0 4px 0 #0a3a23, 0 20px 50px -12px rgba(0,0,0,.6)' }}>
-          {score === 3 && <Confetti n={50} />}
-          <div className="flex items-center justify-between">
-            <span className="f-ui font-bold">Daily Hand #{day}</span>
-            <span className="f-ui flex items-center gap-1 font-bold" style={{ color: '#ffd29a' }}>
-              <Flame size={17} fill="currentColor" /> {streak}
-            </span>
-          </div>
-          <div className="mt-6 flex justify-center gap-3">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5">
+        <div className="relative flex h-12 items-center justify-center">
+          <span className="f-caps">The Daily Hand · No. {day}</span>
+        </div>
+        {/* The thing you share. */}
+        <div className="m-felt m-pop relative mt-3 overflow-hidden rounded-[26px] px-5 pt-8 pb-7 text-center" style={{ boxShadow: '0 0 0 1px var(--hair), 0 20px 40px rgba(0,0,0,.45)' }}>
+          {score === 3 && <Confetti n={40} />}
+          <div className="flex justify-center gap-3.5">
             {[0, 1, 2].map((i) => (
-              <ResultCard key={i} i={i} ok={!!results[i]} />
+              <div key={i} className="m-flip grid h-[104px] w-[74px] place-items-center rounded-[8px]" style={{ ['--i' as string]: i, transform: `rotate(${(i - 1) * 6}deg)`, background: '#fbf8f1', boxShadow: '0 10px 22px rgba(0,0,0,.5)' }}>
+                <Seal ok={!!results[i]} />
+              </div>
             ))}
           </div>
-          <div className="f-display mt-6 text-center">{headline}</div>
-          <div className="mt-4 flex items-center justify-center gap-2">
-            <TierChip rating={profile.rating} size={26} />
-            <span className="f-ui font-bold">{tier.name}</span>
-            <span className="f-ui f-num text-white/70">{profile.rating.toLocaleString()}</span>
+          <div className="f-display mt-7" style={{ fontSize: 42 }}>
+            {headline}
+          </div>
+          <div className="f-small mt-2 font-normal" style={{ color: 'rgba(242,236,224,.7)' }}>
+            {DAILY_TIERS.map((t, i) => `${t.label} ${results[i] ? '✓' : '✗'}`).join('  ·  ')}
           </div>
         </div>
 
-        <div className="mt-8 text-center">
-          <div className="f-ui t2">Next Daily Hand in</div>
-          <div className="f-display f-num mt-1">
-            <Countdown />
-          </div>
+        <div className="mt-7 flex items-stretch">
+          {fig(streak, streak === 1 ? 'day streak' : 'day streak')}
+          <div className="w-px" style={{ background: 'var(--line)' }} />
+          {fig(profile.rating.toLocaleString(), 'rating')}
+          <div className="w-px" style={{ background: 'var(--line)' }} />
+          {fig(<Countdown />, 'until the next')}
         </div>
 
         <div className="mt-auto flex flex-col gap-3 pt-8 pb-5">
@@ -210,10 +203,10 @@ function DailyDone({ day, results }: { day: number; results: boolean[] }) {
               setMsg(r === 'copied' ? 'Copied — paste it in the group chat' : r === 'failed' ? 'Couldn’t share' : null);
             }}
           >
-            <Share size={19} strokeWidth={2.6} /> Share result
+            Share result
           </Btn>
           {msg && <div className="f-small t2 text-center">{msg}</div>}
-          <Btn tone="ghost" onClick={() => nav('/', { replace: true })}>
+          <Btn tone="outline" onClick={() => nav('/', { replace: true })}>
             Done
           </Btn>
         </div>
@@ -263,8 +256,8 @@ export function PracticeRun() {
   if (!queue.length)
     return (
       <div className="m-app fixed inset-0 z-30 flex flex-col items-center justify-center gap-2 px-10 text-center">
-        <div className="m-pop mb-3 grid h-20 w-20 place-items-center rounded-full" style={{ background: 'var(--go)', color: 'var(--go-ink)' }}>
-          <Check size={40} strokeWidth={3.4} />
+        <div className="m-pop mb-3">
+          <Seal ok size={72} />
         </div>
         <h1 className="f-display">All caught up</h1>
         <p className="f-body t2">Every mistake that’s due has been reviewed. Try a drill, or import more hands.</p>
@@ -321,7 +314,7 @@ function PracticeDone({ title, results, drills, onAgain }: { title: string; resu
         <div className="relative mt-14 text-center">
           {ratio >= 0.8 && <Confetti />}
           <div className="f-ui t2">{title}</div>
-          <div className="m-pop f-num mt-2 text-[80px] leading-none font-extrabold" style={{ color: ratio >= 0.8 ? 'var(--go)' : ratio >= 0.6 ? 'var(--gold)' : 'var(--text)' }}>
+          <div className="m-pop f-hero f-num mt-2" style={{ fontSize: 88, color: ratio >= 0.8 ? 'var(--gold)' : 'var(--text)' }}>
             {score}
             <span className="t3">/{results.length}</span>
           </div>

@@ -18,7 +18,7 @@ const mode = uiMode();
 const Root = mode === 'mobile' ? lazy(() => import('./mobile/MobileApp.tsx')) : lazy(() => import('./App.tsx'));
 if (mode === 'mobile') {
   document.documentElement.classList.add('mobile-ui');
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0b0e17');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0a0f0d');
 }
 
 createRoot(document.getElementById('root')!).render(

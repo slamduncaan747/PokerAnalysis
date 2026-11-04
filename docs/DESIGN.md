@@ -18,16 +18,22 @@ Strava / Apple Fitness. None of their visuals are copied; these are the principl
 | 9 | **Varied rhythm, no card soup** | App Store Today, NYT Games | Mix a full-bleed hero, a horizontal shelf of big tiles, and a few compact lists. Not ten identical white boxes. |
 | 10 | **Personality in the words** | Duolingo, Wordle | Short, warm, poker-native copy: "Nailed it.", "Good fold.", "3 to Reg". Never jargon walls. |
 
-## Tokens
+## Direction: The Card Room (chosen by the owner)
 
-- **Room:** `#0b0e17` background, `#141927` surface, `#1c2235` raised, hairline `rgba(255,255,255,.07)`.
-- **Text:** `#f4f6fc`, secondary `#99a2bd`, tertiary `#5d6580`.
-- **Felt:** radial `#23935b → #0f5434`, rail `#0a2a1c`.
-- **Colour jobs (each with a darker lip):** green `#2bd67b` = the primary button and "correct"; red `#ff5a5f` = "wrong"; gold `#ffc233` = rating, rank and +/− changes only. Poker actions (Fold / Call / Raise) are all the same neutral raised button until you answer, so nothing hints at the answer.
-- **Chips (casino denominations):** white, red, green, black, purple, gold (plus blue and orange, which real casinos use too). Themes and drills use these; nothing else.
-- **Type:** Rubik (bundled) — 800/900 for numbers and titles, 500–600 for UI, 400 for body. Sizes 44/32/24/20/17/15/13.
-- **Shape:** radius 12 (small), 18 (tiles), 24 (hero); lip 4px on buttons, 3px on tiles.
-- **Motion:** springy (cubic-bezier(.2,1.2,.4,1)) for things that appear; 120 ms press; cards deal in sequence; feedback banner slides up.
+A private card room, executed with restraint: the references above supply the mechanics
+(Robinhood's big number, Chess.com's table-first puzzle, Duolingo's satisfying answer,
+NYT's daily ritual); the room supplies the look.
+
+- **Room:** near-black with a green undertone `#0a0f0d`; surfaces `#111815`; hairlines `rgba(255,255,255,.07)`.
+- **Text:** warm ivory `#f2ece0`, secondary `#a29d90`, tertiary `#6d6b62`.
+- **Gold `#d4b26a`:** fine detail only — hairlines, small caps labels, the streak, rating changes, the seal. Never a gradient on text, never a big fill.
+- **The table:** baize with a soft overhead light and a faint fabric texture; a leather rail with a 1px brass inlay.
+- **Cards:** ivory `#fbf8f1`, classic two-colour deck (`#141414` / `#b3261e`), serif ranks with lining figures. Backs are oxblood with a fine engraved pattern and an ivory border.
+- **Chips:** clay chips in muted real denomination colours (white, red, green, black, purple, gold, plus blue and orange), cream edge spots, serif denomination.
+- **Type:** Cormorant Garamond (600–700, lining figures) for numbers, titles and card ranks; Inter for everything you read. At most one small-caps label per surface.
+- **Buttons:** ivory fill for the one thing to do; everything else is dark with a hairline. Poker actions are all the same until you answer.
+- **Answers:** a sheet in deep green (right) or oxblood (wrong), a gold seal, a serif verdict, one sentence, Continue.
+- **Motion:** unhurried — cards deal in sequence, results turn over, sheets glide up.
 
 ## Rules learned from the first review
 
