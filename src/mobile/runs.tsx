@@ -14,7 +14,7 @@ import { useStore } from '../store.ts';
 import { Player } from './Player.tsx';
 import { puzzleOutcome, puzzleView, questionOutcome, questionView } from './spot.ts';
 import { DrillChip, THEME_META } from './meta.tsx';
-import { Bar, Btn, Confetti, Countdown, MCard, RatingPill, Seal } from './ui.tsx';
+import { Bar, Btn, Confetti, Countdown, IVORY, MCard, RatingPill, Seal } from './ui.tsx';
 
 export function useBank() {
   const bank = usePuzzles((s) => s.bank);
@@ -176,7 +176,7 @@ function DailyDone({ day, results }: { day: number; results: boolean[] }) {
             {score === 3 && <Confetti n={40} />}
             <div className="flex justify-center">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="m-flip grid h-[112px] w-[80px] place-items-center rounded-[11px] bg-white" style={{ ['--i' as string]: i, marginLeft: i ? -8 : 0, zIndex: i === 1 ? 2 : 1, transform: `rotate(${(i - 1) * 9}deg) translateY(${i === 1 ? -8 : 0}px)`, boxShadow: '0 10px 22px rgba(0,0,0,.4)' }}>
+                <div key={i} className="m-flip grid h-[112px] w-[80px] place-items-center rounded-[11px]" style={{ background: IVORY, ['--i' as string]: i, marginLeft: i ? -8 : 0, zIndex: i === 1 ? 2 : 1, transform: `rotate(${(i - 1) * 9}deg) translateY(${i === 1 ? -8 : 0}px)`, boxShadow: '0 10px 22px rgba(0,0,0,.4)' }}>
                   <Seal ok={!!results[i]} size={46} />
                 </div>
               ))}

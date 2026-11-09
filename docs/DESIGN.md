@@ -26,7 +26,7 @@ The card-room idea, executed like a modern App Store game. One rule per element,
 - **The table is the hero.** One saturated felt green inside a dark rail (`.m-rail > .m-felt`). It appears only where you play: the puzzle screen, the Daily Hand, the result card, the My Game empty state.
 - **Colour means something.** White is the primary button. Amber (`--gold`) is rating and streak. Green (`--go`) is right, red (`--bad`) is wrong. Theme icons are tinted rounded squares (`IconBadge`).
 - **Type.** Bricolage Grotesque 700–800 for display and every number; Inter for body. Scale: `.f-hero .f-display .f-title .f-head .f-body .f-ui .f-small .f-caps`.
-- **Cards and chips.** White cards with a heavy rank and a large suit; red crosshatch backs. Flat, vivid chips mark rank.
+- **Cards and chips.** Ivory stock with a fine gold line, one heavy oversized rank top-left and one big suit bottom-right; red crosshatch backs with an ivory border. Flat, vivid chips mark rank.
 - **Feedback.** Answering slides up a sheet coloured by the result, with a one-line reason, "Why?" for the detail and one Continue button.
 - **Chrome.** Four-tab translucent bar with line icons; large left-aligned screen titles.
 

@@ -88,9 +88,11 @@ export function Seal({ ok, size = 42 }: { ok: boolean; size?: number }) {
 
 /* ------------------------------------------------------------------ cards */
 const SUIT = ['♠', '♥', '♦', '♣'];
-const SUIT_COLOR = ['#15161a', '#e0332f', '#e0332f', '#15161a'];
 
 /** A playing card: white, one heavy rank, one big suit. Readable at any size. */
+/** The card stock: faces, back borders and result cards all share it. */
+export const IVORY = '#f7f0df';
+
 export function MCard({ card, w = 54, hidden = false, dim = false, className = '', style }: { card?: Card | null; w?: number; hidden?: boolean; dim?: boolean; className?: string; style?: CSSProperties }) {
   const h = Math.round(w * 1.4);
   const r = Math.max(4, Math.round(w * 0.14));
@@ -106,7 +108,7 @@ export function MCard({ card, w = 54, hidden = false, dim = false, className = '
           borderRadius: r,
           background: '#e0332f',
           backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,.16) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, rgba(255,255,255,.16) 0 2px, transparent 2px 7px)',
-          boxShadow: `inset 0 0 0 ${b}px #fff, ${shadow}`,
+          boxShadow: `inset 0 0 0 ${b}px ${IVORY}, ${shadow}`,
           ...style,
         }}
       />
@@ -114,13 +116,15 @@ export function MCard({ card, w = 54, hidden = false, dim = false, className = '
   }
   const rank = RANKS[rankOf(card)];
   const s = suitOf(card);
+  const big = w >= 40;
+  // Ivory stock, a fine gold line, one heavy rank and one big suit.
+  const line = big ? `inset 0 0 0 ${w * 0.045}px ${IVORY}, inset 0 0 0 ${w * 0.062}px #c9a557, ` : '';
   return (
-    <div className={`relative shrink-0 overflow-hidden ${className}`} style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(180deg,#ffffff,#f1f2f4)', color: SUIT_COLOR[s], boxShadow: shadow, opacity: dim ? 0.4 : 1, ...style }}>
-      <span className="absolute flex flex-col items-center leading-none" style={{ left: w * 0.1, top: w * 0.09, minWidth: w * 0.34 }}>
-        <span className="f-disp font-extrabold" style={{ fontSize: w * (w >= 40 ? 0.46 : 0.52), lineHeight: 0.95, letterSpacing: rank === 'T' ? '-.09em' : '-.03em' }}>{rank === 'T' ? '10' : rank}</span>
-        {w >= 40 && <span style={{ fontSize: w * 0.26, lineHeight: 1, marginTop: w * 0.02 }}>{SUIT[s]}</span>}
+    <div className={`relative shrink-0 overflow-hidden ${className}`} style={{ width: w, height: h, borderRadius: r, background: IVORY, color: s === 1 || s === 2 ? '#c5281f' : '#1b1b1b', boxShadow: line + shadow, opacity: dim ? 0.4 : 1, ...style }}>
+      <span className="f-disp absolute font-extrabold" style={{ left: w * (big ? 0.14 : 0.12), top: w * (big ? 0.11 : 0.08), fontSize: w * (big ? 0.6 : 0.54), lineHeight: 0.9, letterSpacing: rank === 'T' ? '-.1em' : '-.04em' }}>
+        {rank === 'T' ? '10' : rank}
       </span>
-      <span className="absolute leading-none" style={{ right: w * 0.09, bottom: w * 0.07, fontSize: w * (w >= 40 ? 0.5 : 0.56) }}>
+      <span className="absolute leading-none" style={{ right: w * (big ? 0.12 : 0.08), bottom: w * (big ? 0.1 : 0.06), fontSize: w * (big ? 0.62 : 0.56) }}>
         {SUIT[s]}
       </span>
     </div>

@@ -8,7 +8,7 @@ import { tierOf } from '../puzzles/ranks.ts';
 import { usePuzzles } from '../puzzles/store.ts';
 import { useUnits } from '../settings.ts';
 import { useStore } from '../store.ts';
-import { Badge, Bar, Btn, Countdown, IconBadge, List, MCard, Row, Seal, Section, Sparkline, TierChip } from './ui.tsx';
+import { Badge, Bar, Btn, Countdown, IconBadge, IVORY, List, MCard, Row, Seal, Section, Sparkline, TierChip } from './ui.tsx';
 
 /** Today's three hands: face down until played, then turned over to a tick or a cross. */
 function DailyCards({ results }: { results: boolean[] }) {
@@ -24,7 +24,7 @@ function DailyCards({ results }: { results: boolean[] }) {
             {r === undefined ? (
               <MCard hidden w={w} style={{ transform: tilt }} />
             ) : (
-              <div className="m-flip grid place-items-center" style={{ ['--i' as string]: i, width: w, height: Math.round(w * 1.4), borderRadius: 9, transform: tilt, background: '#fff', boxShadow: '0 10px 20px rgba(0,0,0,.35)' }}>
+              <div className="m-flip grid place-items-center" style={{ ['--i' as string]: i, width: w, height: Math.round(w * 1.4), borderRadius: 9, transform: tilt, background: IVORY, boxShadow: '0 10px 20px rgba(0,0,0,.35)' }}>
                 <Seal ok={r} size={38} />
               </div>
             )}
