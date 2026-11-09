@@ -144,7 +144,7 @@ export default function Devices() {
       <Section title="Files" note={note ?? 'The code only introduces the two devices; your hands travel directly between them, encrypted.'}>
         <List>
           <FilePicker className="m-row-press block w-full text-left">
-            <Row title="Import from Files" sub="Hand histories (.txt, .zip) or a backup" chevron={false} />
+            <Row title="Import from Files" sub="Hand histories (.txt, .zip) or a backup" chevron />
           </FilePicker>
           <Row
             title="Export a backup"

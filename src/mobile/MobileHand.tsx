@@ -22,10 +22,11 @@ export default function MobileHand() {
   const firstLeak = decisions.find((d) => d.leak);
   return (
     <PushScreen title="Hand review">
-      <div className="m-felt m-rail relative overflow-hidden rounded-[24px] px-4 pt-5 pb-7 text-white">
+      <div className="m-rail" style={{ borderRadius: 36 }}>
+      <div className="m-felt relative overflow-hidden px-4 pt-5 pb-6 text-white" style={{ borderRadius: 28 }}>
         <div className="flex items-center justify-between">
           <span className="f-small font-semibold text-white/75">{new Date(hand.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {a.heroPosition}</span>
-          <span className="f-head f-num" style={{ color: a.netBB >= 0 ? '#7dffb6' : '#ffb3b5' }}>
+          <span className="f-head f-num" style={{ color: '#fff' }}>
             {a.netBB >= 0 ? '+' : '−'}
             {fmt(Math.abs(a.netBB))}
           </span>
@@ -45,6 +46,7 @@ export default function MobileHand() {
           </div>
         </div>
       </div>
+      </div>
 
       <div className="flex flex-col gap-3">
         {decisions.map((d, i) => {
@@ -63,24 +65,24 @@ export default function MobileHand() {
                     {m.label}
                   </div>
                   <div className="f-small t2 truncate font-normal">
-                    {STREET[d.street]} · {tx(d.spot)}
+                    {STREET[d.street]} · {tx(d.spot.replace(new RegExp(`^${STREET[d.street]}\\s*·\\s*`), ''))}
                   </div>
                 </div>
-                {d.evLoss > 0.05 && <span className="f-small f-num c-bad font-bold">−{fmt(d.evLoss)}</span>}
+                {d.evLoss > 0.05 && !same && ['inaccuracy', 'mistake', 'blunder'].includes(d.classification) && <span className="f-small f-num c-bad font-bold">−{fmt(d.evLoss)}</span>}
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-[12px] bg-black/20 px-3 py-2">
+                <div className="rounded-[14px] px-3 py-2.5" style={{ background: 'var(--s2)' }}>
                   <div className="f-small t3">You</div>
                   <div className="f-ui font-semibold">{tx(mine?.label ?? d.heroLabel)}</div>
                 </div>
-                <div className="rounded-[12px] bg-black/20 px-3 py-2">
+                <div className="rounded-[14px] px-3 py-2.5" style={{ background: 'var(--s2)' }}>
                   <div className="f-small t3">Best</div>
                   <div className="f-ui font-semibold" style={{ color: same ? 'var(--text)' : 'var(--go)' }}>
                     {tx(best?.label ?? d.bestKey)}
                   </div>
                 </div>
               </div>
-              {d.explanation.length > 0 && <p className="f-small t2 mt-3 font-normal">{tx(d.explanation[0])}</p>}
+              {d.explanation.length > 0 && !same && <p className="f-small t2 mt-3 font-normal">{tx(d.explanation[0]).replace(/\s*\(chart:[^)]*\)/, '').replace(/^You hold ([A-Z])/, (_m, c: string) => `You hold ${c.toLowerCase()}`)}</p>}
             </div>
           );
         })}

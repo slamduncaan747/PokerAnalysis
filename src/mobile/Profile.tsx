@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { Check, Flame } from 'lucide-react';
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import { haptic } from '../feedback.ts';
 import { liveStreak, ratingSeries } from '../puzzles/engine.ts';
@@ -55,8 +56,9 @@ export function SettingsSelect() {
 }
 
 function ConfirmSheet({ title, action, onConfirm, onCancel }: { title: string; action: string; onConfirm: () => void; onCancel: () => void }) {
-  return (
-    <div className="m-fade fixed inset-0 z-50 flex items-end bg-black/60" onClick={onCancel}>
+  // Rendered at the app root so it sits above the tab bar.
+  return createPortal(
+    <div className="m-fade fixed inset-0 z-[60] flex items-end bg-black/70" onClick={onCancel}>
       <div className="m-up m-safe-bottom mx-auto w-full max-w-[600px] rounded-t-[28px] px-5 pt-7 pb-4" style={{ background: 'var(--s1)' }} onClick={(e) => e.stopPropagation()}>
         <div className="f-head text-center">{action}?</div>
         <p className="f-ui t2 mt-2 text-center font-normal">{title}</p>
@@ -69,7 +71,8 @@ function ConfirmSheet({ title, action, onConfirm, onCancel }: { title: string; a
           </Btn>
         </div>
       </div>
-    </div>
+    </div>,
+    document.querySelector('.m-app') ?? document.body,
   );
 }
 
@@ -79,7 +82,7 @@ export default function Profile() {
   const settings = useSettings();
   const [confirmReset, setConfirmReset] = useState(false);
   const series = ratingSeries(profile);
-  const acc = profile.games ? Math.round((profile.solved / profile.games) * 100) : 0;
+  const acc = profile.history.length ? Math.round((profile.history.filter((a) => a.ok).length / profile.history.length) * 100) : 0;
   const { tier, next, progress, toNext } = tierOf(profile.rating);
   const themes = THEME_ORDER.map((t) => ({ t, ...(profile.themes[t] ?? { n: 0, ok: 0 }) })).filter((x) => x.n > 0);
   const native = Capacitor.isNativePlatform();

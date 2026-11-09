@@ -142,7 +142,7 @@ export default function MyGame() {
         </div>
         <div className="f-small t2 mt-4 font-normal">{summary.hands.toLocaleString()} hands, graded move by move like a chess game review.</div>
         <Btn to="/practice?own=1&n=10" className="mt-4">
-          {due ? `Review ${due > 99 ? '99+' : due} mistakes` : 'Review mistakes'}
+          {due && due <= 99 ? `Review ${due} mistakes` : 'Review your mistakes'}
         </Btn>
       </div>
 
@@ -154,7 +154,7 @@ export default function MyGame() {
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="f-ui truncate font-bold">{LEAKS[l.id].title}</div>
+                <div className="f-ui leading-snug font-bold">{LEAKS[l.id].title}</div>
                 <div className="f-small t2 font-normal">{tx(`${l.count} spots · −${Math.round(l.per100 * 10) / 10}bb/100`)}</div>
               </div>
               <ChevronRight size={20} className="t3" />
@@ -177,7 +177,7 @@ export default function MyGame() {
         <List>
           {summary.worstHands.slice(0, 5).map((w) => {
             const a = ordered.find((x) => x.handId === w.handId);
-            return <Row key={w.handId} icon={a ? <MiniCards cards={a.heroCards} w={26} /> : undefined} title={`${a?.heroPosition ?? ''} · lost ${fmt(w.loss)} to mistakes`} sub={`Result ${w.netBB >= 0 ? '+' : '−'}${fmt(Math.abs(w.netBB))}`} to={`/hand/${encodeURIComponent(w.handId)}`} />;
+            return <Row key={w.handId} icon={a ? <MiniCards cards={a.heroCards} w={26} /> : undefined} title={`Lost ${fmt(w.loss)} to mistakes`} sub={`${a?.heroPosition ? `${a.heroPosition} · ` : ''}result ${w.netBB >= 0 ? '+' : '−'}${fmt(Math.abs(w.netBB))}`} to={`/hand/${encodeURIComponent(w.handId)}`} />;
           })}
         </List>
       </Section>

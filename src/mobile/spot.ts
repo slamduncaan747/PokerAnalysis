@@ -196,7 +196,16 @@ function groupOf(key: string): ViewOption['group'] {
   return 'choice';
 }
 
-export function questionView(q: Question, tx: (s: string) => string, real?: RealStake): SpotView {
+/** Own-hand text comes straight from the hand history: round the amounts and drop the card codes. */
+const tidy = (s: string) =>
+  s
+    .replace(/(\d+\.\d{2,})bb/g, (_m, n: string) => `${Math.round(parseFloat(n) * 10) / 10}bb`)
+    .replace(/^(Preflop|Flop|Turn|River)[^:]*:/, '$1:')
+    .replace(/(^|: |, )you /g, '$1You ');
+
+export function questionView(q: Question, tx0: (s: string) => string, real?: RealStake): SpotView {
+  const tx = (s: string) => tx0(tidy(s));
+  const raise = /raises to ([\d.]+)bb/.exec(q.prompt);
   const options: ViewOption[] = q.options.map((o) => {
     const g = q.kind === 'math' ? 'choice' : groupOf(o.key);
     const full = tx(o.label);
@@ -212,11 +221,11 @@ export function questionView(q: Question, tx: (s: string) => string, real?: Real
     board: q.board,
     heroPos: q.position,
     villainPos: q.villainPos,
-    villainAction: q.toCallBB > 0 && q.board.length ? `Bets ${tx(`${Math.round(q.toCallBB * 10) / 10}bb`)}` : undefined,
+    villainAction: q.toCallBB > 0 && q.board.length ? (raise ? tx(`Raises to ${raise[1]}bb`) : `Bets ${tx(`${Math.round(q.toCallBB * 10) / 10}bb`)}`) : undefined,
     centerPotBB: q.board.length ? q.potBB - q.toCallBB : q.potBB,
     toCallBB: q.toCallBB,
     stackBB: q.stackBB,
-    history: q.history.map(tx),
+    history: q.history.map((l) => tx(l).replace(/, /g, ' · ')),
     prompt: tx(q.prompt),
     handLabel: friendlyHand(q.handLabel),
     options,
@@ -224,7 +233,8 @@ export function questionView(q: Question, tx: (s: string) => string, real?: Real
   };
 }
 
-export function questionOutcome(q: Question, key: string, correct: boolean, tx: (s: string) => string): Outcome {
+export function questionOutcome(q: Question, key: string, correct: boolean, tx0: (s: string) => string): Outcome {
+  const tx = (s: string) => tx0(s.replace(/(\d+\.\d{2,})bb/g, (_m, n: string) => `${Math.round(parseFloat(n) * 10) / 10}bb`));
   const label = (k: string) => tx(q.options.find((o) => o.key === k)?.label ?? k);
   const hasEv = q.options.some((o) => o.ev !== undefined);
   const hasFreq = q.options.some((o) => o.freq !== undefined);

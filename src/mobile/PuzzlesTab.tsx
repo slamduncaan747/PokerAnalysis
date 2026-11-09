@@ -28,7 +28,7 @@ function RankLadder({ rating }: { rating: number }) {
         return (
           <div key={t.name} className="flex flex-col items-center gap-2">
             <div className="relative grid h-[46px] place-items-center">
-              <div style={locked ? { opacity: 0.28, filter: 'grayscale(1)' } : undefined}>
+              <div style={locked ? { opacity: 0.5, filter: 'grayscale(1)' } : undefined}>
                 <Chip color={t.color} size={here ? 46 : 36} lip={here}>
                   <span style={{ fontSize: (here ? 46 : 36) * (t.denom.length > 2 ? 0.24 : 0.32) }}>{t.denom}</span>
                 </Chip>
@@ -46,7 +46,7 @@ function RankLadder({ rating }: { rating: number }) {
 export default function PuzzlesTab() {
   const profile = usePuzzles((s) => s.profile);
   const recent = [...profile.history].reverse().slice(0, 12);
-  const acc = profile.games ? Math.round((profile.solved / profile.games) * 100) : null;
+  const acc = profile.history.length ? Math.round((profile.history.filter((a) => a.ok).length / profile.history.length) * 100) : null;
   const { tier, next, toNext, progress } = tierOf(profile.rating);
   return (
     <TabScreen title="Puzzles" right={liveStreak(profile) > 0 ? <StreakPill n={liveStreak(profile)} /> : undefined}>
@@ -79,7 +79,7 @@ export default function PuzzlesTab() {
         <RankLadder rating={profile.rating} />
       </Section>
 
-      <Section title="Practise a theme">
+      <Section title="Practice a theme">
         <div className="grid grid-cols-2 gap-3">
           {THEME_ORDER.map((t) => {
             const st = profile.themes[t];
@@ -87,7 +87,7 @@ export default function PuzzlesTab() {
               <Link key={t} to={`/play?theme=${t}`} onClick={() => haptic.tap()} className="m-tile m-press flex flex-col p-4">
                 <div className="flex items-start justify-between">
                   <ThemeChip theme={t} size={44} />
-                  {st && st.n > 0 && <span className="f-small f-num t2">{Math.round((st.ok / st.n) * 100)}%</span>}
+                  <span className="f-small f-num" style={{ color: st && st.n > 0 ? 'var(--text-2)' : 'var(--text-3)' }}>{st && st.n > 0 ? `${Math.round((st.ok / st.n) * 100)}%` : 'New'}</span>
                 </div>
                 <div className="mt-3 text-[16px] leading-tight font-bold">{THEME_META[t].name}</div>
                 <div className="f-small t2 mt-1 font-normal">{THEME_META[t].blurb}</div>
@@ -109,7 +109,7 @@ export default function PuzzlesTab() {
                   <Seal ok={a.ok} size={28} />
                 }
                 title={THEME_META[a.th].name}
-                sub={`${a.mode === 'daily' ? 'Daily Hand, ' : ''}puzzle ${a.pr}, ${ago(a.t)}`}
+                sub={`${a.mode === 'daily' ? 'Daily Hand' : `Puzzle ${a.pr.toLocaleString()}`} · ${ago(a.t)}`}
                 value={
                   a.d !== undefined ? (
                     <span className="font-bold" style={{ color: a.d >= 0 ? 'var(--go)' : 'var(--text-3)' }}>

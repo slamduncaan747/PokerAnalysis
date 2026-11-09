@@ -6,7 +6,17 @@ import type { Outcome, SpotView, ViewOption } from './spot.ts';
 import { Btn, ChipPile, Confetti, MCard, type BtnTone } from './ui.tsx';
 
 function useViewport() {
-  const read = () => (typeof window === 'undefined' ? { w: 390, h: 844 } : { w: Math.min(window.innerWidth, 560), h: window.innerHeight });
+  const read = () => {
+    if (typeof window === 'undefined') return { w: 390, h: 844 };
+    // Usable height: the screen minus the notch and the home indicator.
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;visibility:hidden;padding-top:var(--sat);padding-bottom:var(--sab)';
+    document.body.appendChild(probe);
+    const ps = getComputedStyle(probe);
+    const safe = (parseFloat(ps.paddingTop) || 0) + (parseFloat(ps.paddingBottom) || 0);
+    probe.remove();
+    return { w: Math.min(window.innerWidth, 560), h: window.innerHeight - safe };
+  };
   const [v, setV] = useState(read);
   useEffect(() => {
     const on = () => setV(read());
@@ -109,7 +119,8 @@ function Felt({ v, h, shake, celebrate }: { v: SpotView; h: number; shake?: bool
 
 function History({ lines }: { lines: string[] }) {
   const [open, setOpen] = useState(false);
-  if (!lines.length) return null;
+  // One line only repeats what the table already shows.
+  if (lines.length < 2) return null;
   const shown = open ? lines : lines.slice(-1);
   const many = lines.length > 1;
   const body = (
@@ -165,8 +176,8 @@ function OptionButton({ o, state, onClick }: { o: ViewOption; state: OptState; o
       className={`keep !flex-col !gap-0 !px-2 transition-opacity ${state === 'faded' ? 'opacity-30' : ''}`}
       style={{ minHeight: 64, ...(correct ? { boxShadow: 'inset 0 0 0 2px var(--go)', color: 'var(--go)' } : {}) }}
     >
-      <span className="f-num text-[17px] leading-tight font-bold">{o.label}</span>
-      {o.sub && <span className="f-num mt-0.5 text-[13px] font-semibold opacity-65">{o.sub}</span>}
+      <span className="f-num text-[17px] leading-tight font-bold">{o.label.replace(/^All-in$/i, 'All in')}</span>
+      {o.sub && <span className="f-num mt-0.5 text-[13px] font-semibold opacity-65">{o.sub.replace(/^\((.*)\)$/, '$1')}</span>}
     </Btn>
   );
 }
@@ -206,7 +217,7 @@ function Feedback({ o, seed, onNext, nextLabel, real }: { o: Outcome; seed: numb
   const hasMore = !!o.idea || o.bars.length > 0 || (o.lines?.length ?? 0) > 0 || o.facts.length > 0;
   return (
     <div className="m-up fixed inset-x-0 bottom-0 z-40 mx-auto max-w-[600px]" style={{ background: bg, boxShadow: '0 -20px 50px rgba(0,0,0,.55)', borderRadius: '28px 28px 0 0' }}>
-      <div className="m-noscrollbar max-h-[62dvh] overflow-y-auto px-5 pt-5">
+      <div className="m-noscrollbar max-h-[62dvh] overflow-y-auto px-5 pt-5 pb-1">
         <div className="flex items-center gap-3">
           <div className="m-pop grid h-11 w-11 shrink-0 place-items-center rounded-full" style={{ background: color, color: o.brilliant ? '#2b1c00' : good ? 'var(--go-ink)' : 'var(--bad-ink)' }}>
             {o.brilliant ? <Sparkles size={22} strokeWidth={2.6} /> : o.ok ? <Check size={25} strokeWidth={3.4} /> : <X size={23} strokeWidth={3.4} />}
@@ -227,10 +238,10 @@ function Feedback({ o, seed, onNext, nextLabel, real }: { o: Outcome; seed: numb
             Best play: <span className="font-bold text-white">{o.bestLabel}</span>
           </div>
         )}
-        {o.headline && <p className={`f-body text-white/90 ${o.ok ? 'mt-4' : 'mt-1.5'}`}>{o.headline}</p>}
+        {o.headline && !(open && o.idea) && <p className={`f-body text-white/90 ${o.ok ? 'mt-4' : 'mt-1.5'}`}>{o.headline}</p>}
         {open && (
           <div className="m-fade mt-4 flex flex-col gap-4 pb-1">
-            {o.idea && <p className="f-ui font-normal text-white/75">{o.idea}</p>}
+            {o.idea && <p className="f-body text-white/90">{o.idea}</p>}
             {o.lines && o.lines.length > 0 && (
               <ul className="f-ui flex flex-col gap-2 font-normal text-white/75">
                 {o.lines.map((l, i) => (
@@ -261,9 +272,9 @@ function Feedback({ o, seed, onNext, nextLabel, real }: { o: Outcome; seed: numb
             {o.facts.length > 0 && (
               <div className="flex flex-col gap-1.5">
                 {o.facts.map((f) => (
-                  <div key={f.label} className="f-ui flex justify-between gap-4 font-normal">
+                  <div key={f.label} className={`f-ui font-normal ${f.value.length > 14 ? 'flex flex-col gap-0.5 pt-1' : 'flex justify-between gap-4'}`}>
                     <span className="text-white/60">{f.label}</span>
-                    <span className="text-right font-semibold">{f.value}</span>
+                    <span className="font-semibold">{f.value}</span>
                   </div>
                 ))}
               </div>
@@ -344,7 +355,10 @@ export function Player({
   const seed = [...view.id].reduce((s, c) => s + c.charCodeAt(0), 0);
   const { h: vh } = useViewport();
   const rows = view.options.length > 3 ? 2 : 1;
-  const tableH = Math.round(Math.max(280, Math.min(460, vh - 380 - rows * 74)));
+  const room = vh - 56 - 196 - (rows * 72 + 28);
+  const tableH = Math.round(Math.max(250, Math.min(470, room)));
+  // On a short screen the table and the buttons come first.
+  const tight = room < 250;
   const label = [title, subtitle].filter(Boolean).join(' · ');
   return (
     <div className="m-app fixed inset-0 z-30 flex flex-col">
@@ -380,19 +394,19 @@ export function Player({
         )}
         <div className="flex min-w-10 shrink-0 justify-end">{right}</div>
       </div>
-      <div className="m-noscrollbar flex-1 overflow-y-auto pb-4">
-        <div className="mx-auto max-w-[600px]">
+      <div className="m-noscrollbar flex-1 overflow-y-auto">
+        <div className="mx-auto flex min-h-full max-w-[600px] flex-col">
           <div className="px-3 pt-1">
             <Felt v={view} h={tableH} shake={!!outcome && !outcome.ok} celebrate={!!outcome?.brilliant} />
           </div>
-          <div className="px-5" style={{ marginTop: view.kind === 'table' ? 30 : 20 }}>
+          <div className="flex flex-1 flex-col justify-center px-5 pb-3" style={{ paddingTop: view.kind === 'table' ? 26 : 16 }}>
             <div className="text-center">
               {progress && <div className="f-caps mb-1.5">{label}</div>}
               <div className="f-title" style={{ fontSize: prompt.length > 26 ? 23 : 27 }}>{prompt}</div>
               <div className="f-ui t2 mt-1">{[view.kind === 'math' ? undefined : STREET_NAME[view.street], view.kind === 'table' ? view.handLabel : undefined].filter(Boolean).join(' · ')}</div>
             </div>
             <div className="mt-3.5">
-              <History lines={view.history.map(tx)} />
+              {!tight && <History lines={view.history.map(tx).filter((l) => !/:\s*—\s*$/.test(l))} />}
             </div>
           </div>
         </div>

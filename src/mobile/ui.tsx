@@ -116,10 +116,11 @@ export function MCard({ card, w = 54, hidden = false, dim = false, className = '
   const s = suitOf(card);
   return (
     <div className={`relative shrink-0 overflow-hidden ${className}`} style={{ width: w, height: h, borderRadius: r, background: 'linear-gradient(180deg,#ffffff,#f1f2f4)', color: SUIT_COLOR[s], boxShadow: shadow, opacity: dim ? 0.4 : 1, ...style }}>
-      <span className="f-disp absolute leading-none font-extrabold" style={{ left: w * 0.13, top: w * 0.1, fontSize: w * 0.52, letterSpacing: rank === 'T' ? '-.09em' : '-.03em' }}>
-        {rank === 'T' ? '10' : rank}
+      <span className="absolute flex flex-col items-center leading-none" style={{ left: w * 0.1, top: w * 0.09, minWidth: w * 0.34 }}>
+        <span className="f-disp font-extrabold" style={{ fontSize: w * (w >= 40 ? 0.46 : 0.52), lineHeight: 0.95, letterSpacing: rank === 'T' ? '-.09em' : '-.03em' }}>{rank === 'T' ? '10' : rank}</span>
+        {w >= 40 && <span style={{ fontSize: w * 0.26, lineHeight: 1, marginTop: w * 0.02 }}>{SUIT[s]}</span>}
       </span>
-      <span className="absolute leading-none" style={{ right: w * 0.1, bottom: w * 0.08, fontSize: w * 0.56 }}>
+      <span className="absolute leading-none" style={{ right: w * 0.09, bottom: w * 0.07, fontSize: w * (w >= 40 ? 0.5 : 0.56) }}>
         {SUIT[s]}
       </span>
     </div>
@@ -452,5 +453,5 @@ export function Countdown() {
   const mid = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
   const s = Math.max(0, Math.floor((mid - now) / 1000));
   const pad = (x: number) => String(x).padStart(2, '0');
-  return <span className="f-num">{`${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`}</span>;
+  return <span className="f-tnum">{`${Math.floor(s / 3600)}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`}</span>;
 }

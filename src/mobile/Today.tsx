@@ -1,4 +1,4 @@
-import { ChevronRight, Flame, RotateCcw, Target, Upload } from 'lucide-react';
+import { ChevronRight, Flame, RotateCcw, Target, TrendingUp, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { haptic } from '../feedback.ts';
 import { LEAKS } from '../lib/engine/leaks.ts';
@@ -111,15 +111,15 @@ export default function Today() {
         <Link to="/puzzles" onClick={() => haptic.tap()} className="m-tile m-press flex min-h-[156px] flex-col p-4">
           <div className="flex items-center justify-between">
             <span className="f-caps">Rating</span>
-            <TierChip rating={profile.rating} size={26} />
+            <TrendingUp size={22} strokeWidth={2.4} style={{ color: 'var(--text-3)' }} />
           </div>
           <div className="f-display f-num mt-2" style={{ fontSize: 38 }}>
             {profile.rating.toLocaleString()}
           </div>
           <div className="f-small mt-1" style={{ color: todayDelta > 0 ? 'var(--go)' : todayDelta < 0 ? 'var(--bad)' : 'var(--text-2)' }}>
-            {todayDelta !== 0 ? `${todayDelta > 0 ? '+' : '−'}${Math.abs(todayDelta)} today` : tier.name}
+            {todayDelta !== 0 ? `${todayDelta > 0 ? '+' : '−'}${Math.abs(todayDelta)} today` : `${tier.name} rank`}
           </div>
-          <div className="mt-auto pt-2">{series.length >= 5 ? <Sparkline data={series} w={138} h={30} color={series[series.length - 1] >= series[0] ? 'var(--go)' : 'var(--bad)'} /> : <span className="f-small t3 font-normal">Play to set your rating</span>}</div>
+          <div className="mt-auto pt-2">{series.length >= 3 ? <Sparkline data={series} w={138} h={30} color={series[series.length - 1] >= series[0] ? 'var(--go)' : 'var(--bad)'} /> : <span className="f-small t3 font-normal">{profile.games ? `${profile.games} played` : 'Play to set your rating'}</span>}</div>
         </Link>
         <div className="m-tile flex min-h-[156px] flex-col p-4">
           <div className="flex items-center justify-between">

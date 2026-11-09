@@ -70,7 +70,7 @@ function RatedRunInner({ theme }: { theme?: Theme }) {
     <Player
       key={puzzle.id}
       view={view}
-      title={theme ? THEME_META[theme].name : 'Rated'}
+      title={theme ? 'Practice' : 'Rated'}
       subtitle={`Puzzle ${puzzle.rating.toLocaleString()}${run >= 2 ? ` · ${run} in a row` : ''}`}
       right={<RatingPill rating={rating} />}
       onClose={() => nav(-1)}
@@ -109,6 +109,7 @@ export function DailyRun() {
       title={`Daily Hand #${day}`}
       subtitle={DAILY_TIERS[slot].label}
       progress={{ i: slot, n: 3, results }}
+      right={<span className="m-pill f-num" style={{ paddingLeft: 13 }}>{slot + 1}/3</span>}
       onClose={() => nav(-1)}
       onAnswer={(key) => {
         const ok = puzzle.correct.includes(key);
@@ -317,7 +318,8 @@ function PracticeDone({ title, results, drills, onAgain }: { title: string; resu
           </div>
           <p className="f-body t2 mt-3">{ratio >= 0.8 ? 'Great session — this spot is sinking in.' : ratio >= 0.6 ? 'Solid. One more round locks it in.' : 'This is the leak to work on. Run it back.'}</p>
         </div>
-        <div className="m-tile-flat mt-8 flex flex-col gap-4 p-4">
+        <div className="f-caps mt-9 mb-2.5 px-1">Mastery</div>
+        <div className="m-tile-flat flex flex-col gap-4 p-4">
           {drills.map((d) => {
             const m = mastery(progress, d);
             return (
@@ -328,7 +330,7 @@ function PracticeDone({ title, results, drills, onAgain }: { title: string; resu
                     <span className="f-ui font-semibold">{DRILL_INFO[d].title}</span>
                     <span className="f-ui f-num t2">{m.score}%</span>
                   </div>
-                  <Bar value={m.score / 100} h={8} />
+                  <Bar value={m.score / 100} h={8} color={m.score >= 70 ? 'var(--go)' : 'var(--gold)'} />
                 </div>
               </div>
             );
