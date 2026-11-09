@@ -1,10 +1,11 @@
 import { Lock } from 'lucide-react';
-import { Seal } from './Today.tsx';
 import { liveStreak } from '../puzzles/engine.ts';
 import { TIERS, tierOf } from '../puzzles/ranks.ts';
 import { usePuzzles } from '../puzzles/store.ts';
 import { THEME_META, THEME_ORDER, ThemeChip } from './meta.tsx';
-import { Bar, Btn, Chip, List, Row, Section, StreakPill, TabScreen, TierChip } from './ui.tsx';
+import { Link } from 'react-router-dom';
+import { haptic } from '../feedback.ts';
+import { Bar, Btn, Chip, List, Row, Seal, Section, StreakPill, TabScreen, TierChip } from './ui.tsx';
 
 function ago(t: number) {
   const s = (Date.now() - t) / 1000;
@@ -15,25 +16,26 @@ function ago(t: number) {
   return d === 1 ? 'yesterday' : `${d} days ago`;
 }
 
-/** All six ranks as chips; yours is lifted, the ones above are locked. */
+/** All six ranks as chips; yours is highlighted, the ones above are locked. */
 function RankLadder({ rating }: { rating: number }) {
   const { tier } = tierOf(rating);
   const idx = TIERS.indexOf(tier);
   return (
-    <div className="m-hscroll -mx-5 flex gap-2 px-5 pb-1">
+    <div className="m-tile-flat grid grid-cols-6 px-2 py-4">
       {TIERS.map((t, i) => {
         const here = i === idx;
         const locked = i > idx;
         return (
-          <div key={t.name} className={`flex w-[78px] shrink-0 flex-col items-center gap-1.5 rounded-[18px] py-3 ${here ? 'm-tile' : ''}`} style={here ? { boxShadow: 'inset 0 0 0 2px var(--gold), 0 3px 0 #070912' } : undefined}>
-            <div className={`relative ${locked ? 'opacity-35 grayscale' : ''}`}>
-              <Chip color={t.color} size={here ? 48 : 40}>
-                <span style={{ fontSize: t.denom.length > 2 ? 10 : 13 }}>{t.denom}</span>
-              </Chip>
-              {locked && <Lock size={14} className="absolute -right-1 -bottom-1 text-white" />}
+          <div key={t.name} className="flex flex-col items-center gap-2">
+            <div className="relative grid h-[46px] place-items-center">
+              <div style={locked ? { opacity: 0.28, filter: 'grayscale(1)' } : undefined}>
+                <Chip color={t.color} size={here ? 46 : 36} lip={here}>
+                  <span style={{ fontSize: (here ? 46 : 36) * (t.denom.length > 2 ? 0.24 : 0.32) }}>{t.denom}</span>
+                </Chip>
+              </div>
+              {locked && <Lock size={13} strokeWidth={2.6} className="t3 absolute -right-0.5 -bottom-0.5" />}
             </div>
-            <span className={`f-small font-bold ${here ? '' : 't2'}`}>{t.name}</span>
-            <span className="f-small f-num t3 -mt-1 font-normal">{t.min ? t.min.toLocaleString() : 'Start'}</span>
+            <span className="text-[12px] leading-none font-bold" style={{ color: here ? 'var(--text)' : 'var(--text-3)' }}>{t.name}</span>
           </div>
         );
       })}
@@ -49,28 +51,28 @@ export default function PuzzlesTab() {
   return (
     <TabScreen title="Puzzles" right={liveStreak(profile) > 0 ? <StreakPill n={liveStreak(profile)} /> : undefined}>
       <div className="m-tile m-in p-5">
-        <div className="flex items-center gap-4">
-          <TierChip rating={profile.rating} size={64} />
-          <div className="min-w-0 flex-1">
-            <div className="f-hero f-num">{profile.rating.toLocaleString()}</div>
-            <div className="f-ui t2 mt-1">
-              {tier.name}
-              {acc !== null && ` · ${acc}% solved`}
-            </div>
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="f-caps">Puzzle rating</div>
+            <div className="f-hero f-num mt-2">{profile.rating.toLocaleString()}</div>
           </div>
+          <TierChip rating={profile.rating} size={60} />
+        </div>
+        <div className="f-ui t2 mt-2">
+          <span style={{ color: 'var(--text)' }} className="font-bold">{tier.name}</span>
+          {acc !== null && ` · ${acc}% solved`}
         </div>
         {next && (
           <div className="mt-4">
-            <Bar value={progress} color="var(--gold)" h={12} />
-            <div className="f-small t2 mt-1.5">
+            <Bar value={progress} color="var(--gold)" h={10} />
+            <div className="f-small t2 mt-2 font-normal">
               <span className="f-num font-bold" style={{ color: 'var(--text)' }}>{toNext}</span> points to {next.name}
             </div>
           </div>
         )}
         <Btn to="/play" className="mt-5">
-          Play rated puzzles
+          Play rated
         </Btn>
-        <p className="f-small t3 mt-3 text-center">Solve one and your rating climbs. Miss one and it drops. Puzzles get harder as you get better.</p>
       </div>
 
       <Section title="Ranks">
@@ -78,12 +80,21 @@ export default function PuzzlesTab() {
       </Section>
 
       <Section title="Practise a theme">
-        <List>
+        <div className="grid grid-cols-2 gap-3">
           {THEME_ORDER.map((t) => {
             const st = profile.themes[t];
-            return <Row key={t} icon={<ThemeChip theme={t} size={40} />} title={THEME_META[t].name} sub={THEME_META[t].blurb} value={st && st.n ? `${st.ok}/${st.n}` : undefined} to={`/play?theme=${t}`} />;
+            return (
+              <Link key={t} to={`/play?theme=${t}`} onClick={() => haptic.tap()} className="m-tile m-press flex flex-col p-4">
+                <div className="flex items-start justify-between">
+                  <ThemeChip theme={t} size={44} />
+                  {st && st.n > 0 && <span className="f-small f-num t2">{Math.round((st.ok / st.n) * 100)}%</span>}
+                </div>
+                <div className="mt-3 text-[16px] leading-tight font-bold">{THEME_META[t].name}</div>
+                <div className="f-small t2 mt-1 font-normal">{THEME_META[t].blurb}</div>
+              </Link>
+            );
           })}
-        </List>
+        </div>
       </Section>
 
       <Section title="Recent">
@@ -95,13 +106,13 @@ export default function PuzzlesTab() {
               <Row
                 key={`${a.id}-${a.t}-${i}`}
                 icon={
-                  <Seal ok={a.ok} size={30} />
+                  <Seal ok={a.ok} size={28} />
                 }
                 title={THEME_META[a.th].name}
                 sub={`${a.mode === 'daily' ? 'Daily Hand, ' : ''}puzzle ${a.pr}, ${ago(a.t)}`}
                 value={
                   a.d !== undefined ? (
-                    <span className="font-bold" style={{ color: a.d >= 0 ? 'var(--gold)' : 'var(--text-3)' }}>
+                    <span className="font-bold" style={{ color: a.d >= 0 ? 'var(--go)' : 'var(--text-3)' }}>
                       {a.d >= 0 ? '+' : '−'}
                       {Math.abs(a.d)}
                     </span>

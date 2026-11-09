@@ -1,4 +1,4 @@
-import '@fontsource-variable/cormorant-garamond';
+import '@fontsource-variable/bricolage-grotesque';
 import '@fontsource-variable/inter';
 import { lazy, Suspense, useEffect, useRef } from 'react';
 import { HashRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { useCloud } from '../cloud/state.ts';
 import { haptic } from '../feedback.ts';
 import { usePuzzles } from '../puzzles/store.ts';
 import { useStore } from '../store.ts';
-import { Chip, TierChip } from './ui.tsx';
+import { ChartNoAxesColumn, CircleUser, Puzzle, Spade, type LucideIcon } from 'lucide-react';
 import Today from './Today.tsx';
 
 const PuzzlesTab = lazy(() => import('./PuzzlesTab.tsx'));
@@ -21,66 +21,23 @@ const DailyRun = lazy(() => import('./runs.tsx').then((m) => ({ default: m.Daily
 const PracticeRun = lazy(() => import('./runs.tsx').then((m) => ({ default: m.PracticeRun })));
 const PuzzleReview = lazy(() => import('./runs.tsx').then((m) => ({ default: m.PuzzleReview })));
 
-/* Tab icons are poker objects, in colour when selected: a card back, a chip, two cards, your rank chip. */
-function CardBackIcon({ on }: { on: boolean }) {
-  return (
-    <svg width="26" height="26" viewBox="0 0 26 26">
-      <rect x="6" y="2" width="14" height="22" rx="2.5" fill={on ? '#4e1119' : '#1e2420'} stroke={on ? '#f2ece0' : '#4a4f49'} strokeWidth="1.6" />
-      <circle cx="13" cy="13" r="3.2" fill="none" stroke={on ? '#d4b26a' : '#4a4f49'} strokeWidth="1" />
-    </svg>
-  );
-}
-function TwoCardsIcon({ on }: { on: boolean }) {
-  return (
-    <svg width="28" height="26" viewBox="0 0 28 26">
-      <rect x="3" y="4" width="13" height="18" rx="2.2" transform="rotate(-10 9.5 13)" fill={on ? '#fbf8f1' : '#1e2420'} stroke={on ? '#0a0f0d' : '#4a4f49'} strokeWidth="1.4" />
-      <rect x="11" y="3" width="13" height="18" rx="2.2" transform="rotate(8 17.5 12)" fill={on ? '#fbf8f1' : '#1e2420'} stroke={on ? '#0a0f0d' : '#4a4f49'} strokeWidth="1.4" />
-      <text x="18" y="16" textAnchor="middle" fontSize="9" fontWeight="700" fill={on ? '#b3261e' : '#4a4f49'}>♥</text>
-    </svg>
-  );
-}
-
-function TabIcon({ tab, on }: { tab: string; on: boolean }) {
-  const rating = usePuzzles((s) => s.profile.rating);
-  if (tab === '/') return <CardBackIcon on={on} />;
-  if (tab === '/game') return <TwoCardsIcon on={on} />;
-  const dim = on ? undefined : { filter: 'grayscale(1) brightness(.45)' };
-  if (tab === '/puzzles')
-    return (
-      <span style={dim}>
-        <Chip color="green" size={26} lip={false}>
-          <span style={{ fontSize: 11 }}>♠</span>
-        </Chip>
-      </span>
-    );
-  return (
-    <span style={dim}>
-      <TierChip rating={rating} size={26} />
-    </span>
-  );
-}
-
-const TABS = [
-  { to: '/', label: 'Today', end: true },
-  { to: '/puzzles', label: 'Puzzles' },
-  { to: '/game', label: 'My Game' },
-  { to: '/profile', label: 'Profile' },
+const TABS: { to: string; label: string; icon: LucideIcon; end?: boolean }[] = [
+  { to: '/', label: 'Today', icon: Spade, end: true },
+  { to: '/puzzles', label: 'Puzzles', icon: Puzzle },
+  { to: '/game', label: 'My Game', icon: ChartNoAxesColumn },
+  { to: '/profile', label: 'Profile', icon: CircleUser },
 ];
 
 function TabBar() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20" style={{ background: 'var(--bg)', boxShadow: 'inset 0 1px 0 var(--line)' }}>
+    <nav className="fixed inset-x-0 bottom-0 z-20" style={{ background: 'rgba(10,11,13,.86)', backdropFilter: 'blur(22px) saturate(1.6)', WebkitBackdropFilter: 'blur(22px) saturate(1.6)', boxShadow: 'inset 0 1px 0 var(--line)' }}>
       <div className="mx-auto flex max-w-[600px] px-2">
-        {TABS.map(({ to, label, end }) => (
-          <NavLink key={to} to={to} end={end} replace onClick={() => haptic.tap()} className="flex flex-1 flex-col items-center gap-1 pt-2.5 pb-1.5">
+        {TABS.map(({ to, label, end, icon: Icon }) => (
+          <NavLink key={to} to={to} end={end} replace onClick={() => haptic.tap()} className="flex flex-1 flex-col items-center gap-[5px] pt-2.5 pb-1.5" style={({ isActive }) => ({ color: isActive ? 'var(--text)' : 'var(--text-3)' })}>
             {({ isActive }) => (
               <>
-                <span className="grid h-7 place-items-center transition-transform duration-200" style={{ transform: isActive ? 'scale(1.08)' : 'none' }}>
-                  <TabIcon tab={to} on={isActive} />
-                </span>
-                <span className="text-[11px] leading-none font-semibold" style={{ color: isActive ? 'var(--text)' : 'var(--text-3)' }}>
-                  {label}
-                </span>
+                <Icon size={25} strokeWidth={isActive ? 2.5 : 2.1} fill={isActive && to === '/' ? 'currentColor' : 'none'} />
+                <span className="text-[11px] leading-none font-semibold">{label}</span>
               </>
             )}
           </NavLink>
@@ -98,7 +55,7 @@ function Tabs() {
     window.scrollTo(0, 0);
   }, [loc.pathname]);
   return (
-    <div ref={ref} className="min-h-[100dvh]" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+    <div ref={ref} className="min-h-[100dvh]" style={{ paddingBottom: 'calc(70px + env(safe-area-inset-bottom, 0px))' }}>
       <div className="mx-auto max-w-[600px]">
         <Suspense fallback={<div className="h-[60vh]" />}>
           <Outlet />

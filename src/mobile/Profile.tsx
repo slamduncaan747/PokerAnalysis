@@ -57,7 +57,7 @@ export function SettingsSelect() {
 function ConfirmSheet({ title, action, onConfirm, onCancel }: { title: string; action: string; onConfirm: () => void; onCancel: () => void }) {
   return (
     <div className="m-fade fixed inset-0 z-50 flex items-end bg-black/60" onClick={onCancel}>
-      <div className="m-up m-safe-bottom mx-auto w-full max-w-[600px] rounded-t-[26px] px-5 pt-6 pb-4" style={{ background: 'var(--s1)' }} onClick={(e) => e.stopPropagation()}>
+      <div className="m-up m-safe-bottom mx-auto w-full max-w-[600px] rounded-t-[28px] px-5 pt-7 pb-4" style={{ background: 'var(--s1)' }} onClick={(e) => e.stopPropagation()}>
         <div className="f-head text-center">{action}?</div>
         <p className="f-ui t2 mt-2 text-center font-normal">{title}</p>
         <div className="mt-6 flex flex-col gap-3">
@@ -87,30 +87,43 @@ export default function Profile() {
   const money = settings.units === 'money';
   return (
     <TabScreen title="Profile">
-      <div className="m-tile m-in flex flex-col items-center px-5 pt-6 pb-5 text-center">
-        <TierChip rating={profile.rating} size={92} />
-        <div className="f-title mt-3 font-extrabold">{tier.name}</div>
-        <div className="f-hero f-num mt-1">{profile.rating.toLocaleString()}</div>
+      <div className="m-tile m-in p-5">
+        <div className="flex items-center gap-4">
+          <TierChip rating={profile.rating} size={76} />
+          <div className="min-w-0">
+            <div className="f-caps">{tier.name}</div>
+            <div className="f-hero f-num mt-1" style={{ fontSize: 52 }}>{profile.rating.toLocaleString()}</div>
+          </div>
+        </div>
         {next && (
-          <div className="mt-4 w-full">
-            <Bar value={progress} color="var(--gold)" h={12} />
-            <div className="f-small t2 mt-2">
+          <div className="mt-5">
+            <Bar value={progress} color="var(--gold)" h={10} />
+            <div className="f-small t2 mt-2 font-normal">
               <span className="f-num font-bold" style={{ color: 'var(--text)' }}>{toNext}</span> points to {next.name}
             </div>
           </div>
         )}
-        <div className="f-ui t2 mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-          <span>{acc}% solved</span>
-          <span className="inline-flex items-center gap-1" style={{ color: streak ? 'var(--gold)' : undefined }}>
-            <Flame size={15} fill={streak ? 'currentColor' : 'none'} /> {streak}-day streak
-          </span>
-          <span>Best {profile.peak.toLocaleString()}</span>
-        </div>
         {profile.games >= 10 && (
-          <div className="mt-5 w-full">
+          <div className="mt-5">
             <RatingChart data={series.slice(-120)} h={96} />
           </div>
         )}
+      </div>
+
+      <div className="-mt-5 grid grid-cols-3 gap-3">
+        {[
+          { v: `${acc}%`, l: 'Solved' },
+          { v: String(streak), l: 'Day streak', flame: true },
+          { v: profile.peak.toLocaleString(), l: 'Best' },
+        ].map((x) => (
+          <div key={x.l} className="m-tile px-3 py-4 text-center">
+            <div className="f-title f-num flex items-center justify-center gap-1">
+              {x.flame && <Flame size={19} strokeWidth={2.4} fill={streak ? 'currentColor' : 'none'} style={{ color: streak ? 'var(--gold)' : 'var(--text-3)' }} />}
+              {x.v}
+            </div>
+            <div className="f-small t2 mt-1 font-normal">{x.l}</div>
+          </div>
+        ))}
       </div>
 
       {themes.length > 0 && (
@@ -118,7 +131,7 @@ export default function Profile() {
           <div className="m-tile-flat flex flex-col gap-4 p-4">
             {themes.map(({ t, n, ok }) => (
               <div key={t} className="flex items-center gap-3">
-                <ThemeChip theme={t} size={34} />
+                <ThemeChip theme={t} size={40} />
                 <div className="flex-1">
                   <div className="mb-1.5 flex justify-between">
                     <span className="f-ui font-semibold">{THEME_META[t].name}</span>

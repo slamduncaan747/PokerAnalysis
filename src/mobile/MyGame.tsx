@@ -63,21 +63,21 @@ function Empty() {
   return (
     <TabScreen title="My Game">
       <ImportProgress />
-      <div className="m-felt m-in overflow-hidden rounded-[26px] text-white" style={{ boxShadow: '0 4px 0 #0a3a23' }}>
-        <div className="relative flex h-[160px] items-center justify-center">
-          <div className="absolute left-[18%] top-[52%] -rotate-12"><Chip color="red" size={46}><span>5</span></Chip></div>
-          <div className="absolute left-[11%] top-[24%] rotate-6"><Chip color="black" size={40}><span>100</span></Chip></div>
+      <div className="m-rail m-in" style={{ borderRadius: 36 }}>
+        <div className="m-felt relative flex h-[180px] items-center justify-center overflow-hidden" style={{ borderRadius: 28 }}>
+          <div className="absolute top-[54%] left-[14%] -rotate-12"><Chip color="red" size={46}><span>5</span></Chip></div>
+          <div className="absolute top-[20%] left-[8%] rotate-6"><Chip color="black" size={40}><span>100</span></Chip></div>
           <div className="flex">
-            <MCard card={51} w={64} style={{ transform: 'rotate(-10deg) translateY(4px)' }} />
-            <MCard card={46} w={64} style={{ marginLeft: -16, transform: 'rotate(8deg)' }} />
+            <MCard card={51} w={72} style={{ transform: 'rotate(-8deg) translateY(4px)' }} />
+            <MCard card={46} w={72} style={{ marginLeft: -14, transform: 'rotate(8deg)' }} />
           </div>
-          <div className="absolute right-[14%] top-[22%] rotate-12"><Chip color="green" size={44}><span>25</span></Chip></div>
-          <div className="absolute right-[20%] top-[56%] -rotate-6"><Chip color="purple" size={38}><span>500</span></Chip></div>
+          <div className="absolute top-[18%] right-[10%] rotate-12"><Chip color="green" size={44}><span>25</span></Chip></div>
+          <div className="absolute top-[58%] right-[16%] -rotate-6"><Chip color="purple" size={38}><span>500</span></Chip></div>
         </div>
       </div>
-      <div className="-mt-2 text-center">
+      <div className="-mt-2 px-2 text-center">
         <h2 className="f-display">Your game, graded</h2>
-        <p className="f-body t2 mt-2">Play online? Import your hand histories on your computer and send them here. Every decision gets a grade, and your biggest leaks turn into drills.</p>
+        <p className="f-body t2 mt-2.5">Import your hand histories and every decision gets a grade. Your biggest leaks turn into drills.</p>
       </div>
       <div className="flex flex-col gap-3">
         <Btn to="/devices">
@@ -117,7 +117,7 @@ export default function MyGame() {
       <ImportProgress />
       <div className="m-tile m-in p-5">
         <div className="flex items-center gap-5">
-          <Ring value={acc / 100} size={96} stroke={11} color={accColor}>
+          <Ring value={acc / 100} size={104} stroke={11} color={accColor}>
             <div className="text-center leading-none">
               <div className="f-display f-num">{Math.round(acc)}</div>
               <div className="f-small t3 mt-1">accuracy</div>
@@ -125,14 +125,14 @@ export default function MyGame() {
           </Ring>
           <div className="flex flex-1 flex-col gap-3">
             <div>
-              <div className="f-small t2">Win rate</div>
+              <div className="f-caps">Win rate</div>
               <div className="f-head f-num" style={{ color: summary.bb100 >= 0 ? 'var(--go)' : 'var(--bad)' }}>
                 {tx(`${Math.round(summary.bb100 * 10) / 10}bb`)}
                 <span className="f-small t3 font-medium"> /100</span>
               </div>
             </div>
             <div>
-              <div className="f-small t2">Lost to mistakes</div>
+              <div className="f-caps">Lost to mistakes</div>
               <div className="f-head f-num c-bad">
                 {fmt(summary.evLossPer100)}
                 <span className="f-small t3 font-medium"> /100</span>
@@ -150,7 +150,7 @@ export default function MyGame() {
         <div className="flex flex-col gap-3">
           {summary.leaks.slice(0, 4).map((l, i) => (
             <Tile key={l.id} to={`/practice?leak=${l.id}&n=8`} className="m-in flex items-center gap-3.5 p-4" style={{ ['--i' as string]: i }}>
-              <span className="f-head grid h-10 w-10 shrink-0 place-items-center rounded-full font-extrabold" style={{ background: i === 0 ? '#4a1a1e' : 'var(--s3)', color: i === 0 ? 'var(--bad)' : 'var(--text-2)' }}>
+              <span className="f-head f-disp grid h-11 w-11 shrink-0 place-items-center rounded-[30%] font-extrabold" style={{ background: i === 0 ? 'var(--bad)' : 'var(--s3)', color: i === 0 ? 'var(--bad-ink)' : 'var(--text-2)' }}>
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">

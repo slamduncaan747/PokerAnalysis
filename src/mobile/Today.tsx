@@ -1,4 +1,4 @@
-import { Check, ChevronRight, X } from 'lucide-react';
+import { ChevronRight, Flame, RotateCcw, Target, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { haptic } from '../feedback.ts';
 import { LEAKS } from '../lib/engine/leaks.ts';
@@ -8,46 +8,49 @@ import { tierOf } from '../puzzles/ranks.ts';
 import { usePuzzles } from '../puzzles/store.ts';
 import { useUnits } from '../settings.ts';
 import { useStore } from '../store.ts';
-import { Badge, Bar, Btn, Countdown, MCard, Sparkline, StreakPill, TierChip } from './ui.tsx';
+import { Badge, Bar, Btn, Countdown, IconBadge, List, MCard, Row, Seal, Section, Sparkline, TierChip } from './ui.tsx';
 
-/** The wordmark, set in the serif. */
-export function Wordmark() {
-  return <span className="f-serif text-[27px] leading-none font-semibold">Leakfinder</span>;
-}
-
-/** A gold seal (tick) or a muted red one (cross), as on a result card. */
-export function Seal({ ok, size = 42 }: { ok: boolean; size?: number }) {
+/** Today's three hands: face down until played, then turned over to a tick or a cross. */
+function DailyCards({ results }: { results: boolean[] }) {
+  const w = 66;
   return (
-    <div
-      className="grid place-items-center rounded-full"
-      style={
-        ok
-          ? { width: size, height: size, background: 'radial-gradient(circle at 40% 35%,#ecd598,#c7a253 60%,#9c7c3c)', color: '#2a1f0a', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,.25)' }
-          : { width: size, height: size, background: '#ece4d4', color: '#b3261e', boxShadow: 'inset 0 0 0 1.5px #b3261e' }
-      }
-    >
-      {ok ? <Check size={size * 0.48} strokeWidth={3} /> : <X size={size * 0.4} strokeWidth={3} />}
+    <div className="flex justify-center">
+      {DAILY_TIERS.map((t, i) => {
+        const r = results[i];
+        const next = r === undefined && i === results.length;
+        const tilt = `rotate(${(i - 1) * 9}deg) translateY(${i === 1 ? -8 : 0}px)`;
+        return (
+          <div key={t.label} className={next ? 'm-bob' : ''} style={{ marginLeft: i ? -8 : 0, zIndex: i === 1 ? 2 : 1 }}>
+            {r === undefined ? (
+              <MCard hidden w={w} style={{ transform: tilt }} />
+            ) : (
+              <div className="m-flip grid place-items-center" style={{ ['--i' as string]: i, width: w, height: Math.round(w * 1.4), borderRadius: 9, transform: tilt, background: '#fff', boxShadow: '0 10px 20px rgba(0,0,0,.35)' }}>
+                <Seal ok={r} size={38} />
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-/** Today's three hands: face down until played, then turned over to a seal. */
-function DailyCards({ results }: { results: boolean[] }) {
+const DAY_LETTER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+/** The last seven days: a dot for each Daily Hand you finished. */
+function Week({ day, daily }: { day: number; daily: Record<number, boolean[]> }) {
+  const dow = new Date().getDay();
   return (
-    <div className="flex justify-center gap-4">
-      {DAILY_TIERS.map((t, i) => {
-        const r = results[i];
-        const next = r === undefined && i === results.length;
-        const tilt = `rotate(${(i - 1) * 6}deg) translateY(${i === 1 ? -6 : 0}px)`;
+    <div className="flex justify-between">
+      {[6, 5, 4, 3, 2, 1, 0].map((back) => {
+        const done = (daily[day - back]?.length ?? 0) >= 3;
+        const today = back === 0;
         return (
-          <div key={t.label} className={next ? 'm-bob' : ''}>
-            {r === undefined ? (
-              <MCard hidden w={62} style={{ transform: tilt }} />
-            ) : (
-              <div className="m-flip grid h-[88px] w-[62px] place-items-center rounded-[7px]" style={{ ['--i' as string]: i, transform: tilt, background: '#fbf8f1', boxShadow: '0 8px 18px rgba(0,0,0,.45)' }}>
-                <Seal ok={r} size={36} />
-              </div>
-            )}
+          <div key={back} className="flex flex-col items-center gap-1.5">
+            <div className="h-[18px] w-[18px] rounded-full" style={{ background: done ? 'var(--gold)' : 'var(--s3)', boxShadow: today && !done ? 'inset 0 0 0 2px var(--gold)' : undefined }} />
+            <span className="text-[11px] leading-none font-semibold" style={{ color: today ? 'var(--text)' : 'var(--text-3)' }}>
+              {DAY_LETTER[(dow - back + 7) % 7]}
+            </span>
           </div>
         );
       })}
@@ -66,90 +69,94 @@ export default function Today() {
   const todayStart = new Date().setHours(0, 0, 0, 0);
   const todayDelta = profile.history.filter((a) => a.t >= todayStart && a.d !== undefined).reduce((s, a) => s + (a.d ?? 0), 0);
   const score = results.filter(Boolean).length;
+  const date = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 
   return (
-    <div className="m-fade px-6 pb-10">
+    <div className="m-fade px-5 pb-10">
       <div className="m-safe-top" />
-      <div className="flex h-14 items-center justify-between">
-        <Wordmark />
-        {streak > 0 && <StreakPill n={streak} />}
+      <div className="pt-3 pb-4">
+        <div className="f-caps">{date}</div>
+        <h1 className="f-display mt-1">Today</h1>
       </div>
 
-      {/* The number that matters, big — like a balance. */}
-      <Link to="/puzzles" onClick={() => haptic.tap()} className="m-press mt-5 block">
-        <div className="f-caps">Puzzle rating</div>
-        <div className="mt-2 flex items-end justify-between">
-          <div className="f-hero f-num" style={{ fontSize: 80 }}>
-            {profile.rating.toLocaleString()}
+      {/* The daily ritual, on the table. */}
+      <div className="m-rail m-in" style={{ borderRadius: 36 }}>
+        <div className="m-felt relative px-5 pt-5 pb-5 text-white" style={{ borderRadius: 28 }}>
+          <div className="flex items-center justify-between">
+            <span className="f-title">Daily Hand</span>
+            <span className="f-num grid h-7 place-items-center rounded-full px-3 text-[13px] font-bold" style={{ background: 'rgba(0,0,0,.3)' }}>
+              No. {day}
+            </span>
           </div>
-          <div className="pb-2 text-right">
-            {todayDelta !== 0 && (
-              <div className="f-ui f-num font-semibold" style={{ color: todayDelta > 0 ? 'var(--go)' : 'var(--bad)' }}>
-                {todayDelta > 0 ? '+' : '−'}
-                {Math.abs(todayDelta)} today
-              </div>
-            )}
-            <div className="f-ui t2">{tier.name}</div>
+          <div className="mt-1 text-[15px] font-medium text-white/75">{done ? (score === 3 ? 'Perfect. Three for three.' : `You got ${score} of 3 today.`) : 'Three hands. One try each.'}</div>
+          <div className="mt-7 mb-7">
+            <DailyCards results={results} />
           </div>
-        </div>
-        {series.length >= 5 && (
-          <div className="mt-3">
-            <Sparkline data={series} w={342} h={56} fill={false} />
-          </div>
-        )}
-      </Link>
-
-      {/* The daily ritual. */}
-      <div className="m-felt m-in relative mt-7 overflow-hidden rounded-[24px] px-5 pt-5 pb-5" style={{ boxShadow: '0 0 0 1px var(--hair), 0 20px 40px rgba(0,0,0,.45)' }}>
-        <div className="flex items-baseline justify-between">
-          <span className="f-title" style={{ fontSize: 28 }}>
-            The Daily Hand
-          </span>
-          <span className="f-caps" style={{ color: 'rgba(242,236,224,.7)' }}>
-            No. {day}
-          </span>
-        </div>
-        <div className="my-6">
-          <DailyCards results={results} />
-        </div>
-        {done ? (
-          <Btn to="/daily" tone="outline" style={{ ['--ring' as string]: 'rgba(242,236,224,.35)' }}>
-            {score === 3 ? 'Perfect day — see your result' : `${score} of 3 — see your result`}
-          </Btn>
-        ) : (
-          <Btn to="/daily">{results.length ? 'Continue today’s hands' : 'Play today’s three hands'}</Btn>
-        )}
-        <div className="f-small mt-3 text-center" style={{ color: 'rgba(242,236,224,.65)' }}>
           {done ? (
-            <>
-              Next hands in <Countdown />
-            </>
+            <Btn to="/daily" style={{ background: 'rgba(0,0,0,.32)', color: '#fff' }}>
+              See your result
+            </Btn>
           ) : (
-            'Same hands for everyone · one try each'
+            <Btn to="/daily">{results.length ? 'Continue' : 'Play today’s hands'}</Btn>
+          )}
+          {done && (
+            <div className="mt-3 text-center text-[13px] font-medium text-white/70">
+              Next hands in <Countdown />
+            </div>
           )}
         </div>
       </div>
 
-      <div className="m-tile-flat m-list mt-4 overflow-hidden">
-        <Link to="/play" onClick={() => haptic.tap()} className="m-row-press flex items-center gap-4 px-5 py-4">
-          <TierChip rating={profile.rating} size={44} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline justify-between">
-              <span className="f-head">{tier.name}</span>
-              <span className="f-small c-gold font-semibold">Play rated</span>
-            </div>
-            {next && (
-              <>
-                <div className="mt-2">
-                  <Bar value={progress} />
-                </div>
-                <div className="f-small t2 mt-1.5 font-normal">
-                  {toNext} points to {next.name}
-                </div>
-              </>
-            )}
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <Link to="/puzzles" onClick={() => haptic.tap()} className="m-tile m-press flex min-h-[156px] flex-col p-4">
+          <div className="flex items-center justify-between">
+            <span className="f-caps">Rating</span>
+            <TierChip rating={profile.rating} size={26} />
           </div>
+          <div className="f-display f-num mt-2" style={{ fontSize: 38 }}>
+            {profile.rating.toLocaleString()}
+          </div>
+          <div className="f-small mt-1" style={{ color: todayDelta > 0 ? 'var(--go)' : todayDelta < 0 ? 'var(--bad)' : 'var(--text-2)' }}>
+            {todayDelta !== 0 ? `${todayDelta > 0 ? '+' : '−'}${Math.abs(todayDelta)} today` : tier.name}
+          </div>
+          <div className="mt-auto pt-2">{series.length >= 5 ? <Sparkline data={series} w={138} h={30} color={series[series.length - 1] >= series[0] ? 'var(--go)' : 'var(--bad)'} /> : <span className="f-small t3 font-normal">Play to set your rating</span>}</div>
         </Link>
+        <div className="m-tile flex min-h-[156px] flex-col p-4">
+          <div className="flex items-center justify-between">
+            <span className="f-caps">Streak</span>
+            <Flame size={22} strokeWidth={2.4} fill={streak ? 'currentColor' : 'none'} style={{ color: streak ? 'var(--gold)' : 'var(--text-3)' }} />
+          </div>
+          <div className="f-display f-num mt-2" style={{ fontSize: 38 }}>
+            {streak}
+          </div>
+          <div className="f-small t2 mt-1">{streak === 1 ? 'day' : 'days'}</div>
+          <div className="mt-auto pt-2">
+            <Week day={day} daily={profile.daily} />
+          </div>
+        </div>
+      </div>
+
+      <Link to="/play" onClick={() => haptic.tap()} className="m-tile m-press mt-3 flex items-center gap-4 p-4">
+        <TierChip rating={profile.rating} size={52} />
+        <div className="min-w-0 flex-1">
+          <div className="f-head">Rated puzzles</div>
+          {next ? (
+            <>
+              <div className="mt-2">
+                <Bar value={progress} color="var(--gold)" h={8} />
+              </div>
+              <div className="f-small t2 mt-1.5 font-normal">
+                <span className="f-num font-bold" style={{ color: 'var(--text)' }}>{toNext}</span> to {next.name}
+              </div>
+            </>
+          ) : (
+            <div className="f-small t2 mt-0.5 font-normal">Top rank. Defend it.</div>
+          )}
+        </div>
+        <ChevronRight size={20} strokeWidth={2.4} className="t3 shrink-0" />
+      </Link>
+
+      <div className="mt-8">
         <YourGame />
       </div>
     </div>
@@ -161,49 +168,23 @@ function YourGame() {
   const progress = useStore((s) => s.progress);
   const handsN = useStore((s) => s.hands.size);
   const { tx } = useUnits();
-  const icon = (
-    <div className="flex w-11 shrink-0 justify-center">
-      <MCard card={51} w={24} style={{ transform: 'rotate(-8deg)' }} />
-      <MCard card={46} w={24} style={{ marginLeft: -12, transform: 'rotate(8deg)' }} />
-    </div>
-  );
   if (!handsN || !summary) {
     return (
-      <Link to="/game" onClick={() => haptic.tap()} className="m-row-press flex items-center gap-4 px-5 py-4">
-        {icon}
-        <div className="min-w-0 flex-1">
-          <div className="f-ui font-semibold">Train on your own hands</div>
-          <div className="f-small t2 font-normal">Bring your hand histories and drill your real leaks</div>
-        </div>
-        <ChevronRight size={18} className="t3" />
-      </Link>
+      <Section title="Your game">
+        <List>
+          <Row icon={<IconBadge color="blue"><Upload size={21} strokeWidth={2.5} /></IconBadge>} title="Train on your own hands" sub="Import your hand histories" to="/game" />
+        </List>
+      </Section>
     );
   }
   const due = dueCards(progress).length;
   const top = summary.leaks[0];
   return (
-    <>
-      {top && (
-        <Link to={`/practice?leak=${top.id}&n=8`} onClick={() => haptic.tap()} className="m-row-press flex items-center gap-4 px-5 py-4">
-          {icon}
-          <div className="min-w-0 flex-1">
-            <div className="f-ui font-semibold">Your biggest leak</div>
-            <div className="f-small t2 truncate font-normal">
-              {LEAKS[top.id].title} · {tx(`${Math.round(top.per100 * 10) / 10}bb`)}/100
-            </div>
-          </div>
-          <ChevronRight size={18} className="t3" />
-        </Link>
-      )}
-      <Link to="/practice?own=1&n=10" onClick={() => haptic.tap()} className="m-row-press flex items-center gap-4 px-5 py-4">
-        <div className="f-serif grid w-11 shrink-0 place-items-center text-[26px] font-semibold c-gold">↺</div>
-        <div className="min-w-0 flex-1">
-          <div className="f-ui font-semibold">Review your mistakes</div>
-          <div className="f-small t2 font-normal">Spaced out so they stick</div>
-        </div>
-        <Badge n={due} />
-        <ChevronRight size={18} className="t3" />
-      </Link>
-    </>
+    <Section title="Your game">
+      <List>
+        {top && <Row icon={<IconBadge color="red"><Target size={21} strokeWidth={2.5} /></IconBadge>} title="Fix your biggest leak" sub={`${LEAKS[top.id].title} · ${tx(`${Math.round(top.per100 * 10) / 10}bb`)}/100`} to={`/practice?leak=${top.id}&n=8`} />}
+        <Row icon={<IconBadge color="gold"><RotateCcw size={21} strokeWidth={2.5} /></IconBadge>} title="Review your mistakes" sub="Spaced out so they stick" right={<Badge n={due} />} to="/practice?own=1&n=10" />
+      </List>
+    </Section>
   );
 }

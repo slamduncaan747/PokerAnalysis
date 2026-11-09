@@ -18,39 +18,16 @@ Strava / Apple Fitness. None of their visuals are copied; these are the principl
 | 9 | **Varied rhythm, no card soup** | App Store Today, NYT Games | Mix a full-bleed hero, a horizontal shelf of big tiles, and a few compact lists. Not ten identical white boxes. |
 | 10 | **Personality in the words** | Duolingo, Wordle | Short, warm, poker-native copy: "Nailed it.", "Good fold.", "3 to Reg". Never jargon walls. |
 
-## Direction: The Card Room (chosen by the owner)
+## Direction: Night Game
 
-A private card room, executed with restraint: the references above supply the mechanics
-(Robinhood's big number, Chess.com's table-first puzzle, Duolingo's satisfying answer,
-NYT's daily ritual); the room supplies the look.
+The card-room idea, executed like a modern App Store game. One rule per element, used everywhere.
 
-- **Room:** near-black with a green undertone `#0a0f0d`; surfaces `#111815`; hairlines `rgba(255,255,255,.07)`.
-- **Text:** warm ivory `#f2ece0`, secondary `#a29d90`, tertiary `#6d6b62`.
-- **Gold `#d4b26a`:** fine detail only — hairlines, small caps labels, the streak, rating changes, the seal. Never a gradient on text, never a big fill.
-- **The table:** baize with a soft overhead light and a faint fabric texture; a leather rail with a 1px brass inlay.
-- **Cards:** ivory `#fbf8f1`, classic two-colour deck (`#141414` / `#b3261e`), serif ranks with lining figures. Backs are oxblood with a fine engraved pattern and an ivory border.
-- **Chips:** clay chips in muted real denomination colours (white, red, green, black, purple, gold, plus blue and orange), cream edge spots, serif denomination.
-- **Type:** Cormorant Garamond (600–700, lining figures) for numbers, titles and card ranks; Inter for everything you read. At most one small-caps label per surface.
-- **Buttons:** ivory fill for the one thing to do; everything else is dark with a hairline. Poker actions are all the same until you answer.
-- **Answers:** a sheet in deep green (right) or oxblood (wrong), a gold seal, a serif verdict, one sentence, Continue.
-- **Motion:** unhurried — cards deal in sequence, results turn over, sheets glide up.
+- **Canvas.** Near-black (`--bg #0a0b0d`). Panels are filled (`--s1`, `--s2`, `--s3`), radius 24, never outlined.
+- **The table is the hero.** One saturated felt green inside a dark rail (`.m-rail > .m-felt`). It appears only where you play: the puzzle screen, the Daily Hand, the result card, the My Game empty state.
+- **Colour means something.** White is the primary button. Amber (`--gold`) is rating and streak. Green (`--go`) is right, red (`--bad`) is wrong. Theme icons are tinted rounded squares (`IconBadge`).
+- **Type.** Bricolage Grotesque 700–800 for display and every number; Inter for body. Scale: `.f-hero .f-display .f-title .f-head .f-body .f-ui .f-small .f-caps`.
+- **Cards and chips.** White cards with a heavy rank and a large suit; red crosshatch backs. Flat, vivid chips mark rank.
+- **Feedback.** Answering slides up a sheet coloured by the result, with a one-line reason, "Why?" for the detail and one Continue button.
+- **Chrome.** Four-tab translucent bar with line icons; large left-aligned screen titles.
 
-## Rules learned from the first review
-
-- At most one small label per screen; no tracked-uppercase micro-labels, no "·" chains.
-- The verdict is one sentence of 12 words or fewer; details live under "Why?".
-- Never reveal a puzzle's theme before the answer.
-- One big number instead of rows of identical stat boxes.
-- No chart until there is enough data to make it meaningful (10 rated games).
-- Lists for many items (themes, drills); tiles only for a few important things.
-- The table keeps a fixed height so nothing jumps between puzzles.
-
-## Review checklist (run on every screen)
-
-1. Can you tell in one second what the screen is for and what to tap?
-2. Is there exactly one primary action, and is it the most prominent thing?
-3. Does it look like poker (chips, cards, felt) rather than a settings app?
-4. Is any colour used without a meaning?
-5. Do three or more identical boxes sit in a row? Break the rhythm.
-6. Is every number that matters big, and everything else quiet?
-7. Does pressing anything feel physical (lip, sink, haptic)?
+Tokens live on `.m-app` in `src/index.css`; primitives in `src/mobile/ui.tsx`. New screens compose those and add no colours of their own.

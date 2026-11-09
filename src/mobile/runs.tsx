@@ -14,8 +14,7 @@ import { useStore } from '../store.ts';
 import { Player } from './Player.tsx';
 import { puzzleOutcome, puzzleView, questionOutcome, questionView } from './spot.ts';
 import { DrillChip, THEME_META } from './meta.tsx';
-import { Bar, Btn, Confetti, Countdown, RatingPill } from './ui.tsx';
-import { Seal } from './Today.tsx';
+import { Bar, Btn, Confetti, Countdown, MCard, RatingPill, Seal } from './ui.tsx';
 
 export function useBank() {
   const bank = usePuzzles((s) => s.bank);
@@ -30,8 +29,8 @@ function Loading() {
   return (
     <div className="m-app fixed inset-0 grid place-items-center">
       <div className="m-bob flex">
-        <div className="h-14 w-10 rotate-[-8deg] rounded-[6px] bg-white shadow-lg" />
-        <div className="-ml-4 h-14 w-10 rotate-[8deg] rounded-[6px] bg-[#c8343c] shadow-lg" style={{ boxShadow: 'inset 0 0 0 3px #fff' }} />
+        <MCard card={51} w={46} style={{ transform: 'rotate(-8deg)' }} />
+        <MCard hidden w={46} style={{ marginLeft: -14, transform: 'rotate(8deg)' }} />
       </div>
     </div>
   );
@@ -156,44 +155,42 @@ function DailyDone({ day, results }: { day: number; results: boolean[] }) {
       sound.fanfare();
     } else haptic.success();
   }, [score]);
-  const headline = score === 3 ? 'A perfect day.' : score === 2 ? 'Two for three.' : score === 1 ? 'One for three.' : 'Not today.';
+  const headline = score === 3 ? 'Perfect day!' : score === 2 ? 'Two for three' : score === 1 ? 'One for three' : 'Not today';
   const fig = (value: React.ReactNode, label: string) => (
-    <div className="flex-1 text-center">
-      <div className="f-serif f-num text-[32px] leading-none font-semibold">{value}</div>
-      <div className="f-small t2 mt-1.5 font-normal">{label}</div>
+    <div className="m-tile flex-1 px-2 py-4 text-center">
+      <div className="f-title f-num">{value}</div>
+      <div className="f-small t2 mt-1 font-normal">{label}</div>
     </div>
   );
   return (
     <div className="m-app fixed inset-0 z-30 flex flex-col overflow-y-auto">
       <div className="m-safe-top" />
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5">
-        <div className="relative flex h-12 items-center justify-center">
-          <span className="f-caps">The Daily Hand · No. {day}</span>
+        <div className="relative flex h-[56px] items-center justify-center">
+          <span className="text-[16px] font-bold">Daily Hand</span>
         </div>
         {/* The thing you share. */}
-        <div className="m-felt m-pop relative mt-3 overflow-hidden rounded-[26px] px-5 pt-8 pb-7 text-center" style={{ boxShadow: '0 0 0 1px var(--hair), 0 20px 40px rgba(0,0,0,.45)' }}>
-          {score === 3 && <Confetti n={40} />}
-          <div className="flex justify-center gap-3.5">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="m-flip grid h-[104px] w-[74px] place-items-center rounded-[8px]" style={{ ['--i' as string]: i, transform: `rotate(${(i - 1) * 6}deg)`, background: '#fbf8f1', boxShadow: '0 10px 22px rgba(0,0,0,.5)' }}>
-                <Seal ok={!!results[i]} />
-              </div>
-            ))}
-          </div>
-          <div className="f-display mt-7" style={{ fontSize: 42 }}>
-            {headline}
-          </div>
-          <div className="f-small mt-2 font-normal" style={{ color: 'rgba(242,236,224,.7)' }}>
-            {DAILY_TIERS.map((t, i) => `${t.label} ${results[i] ? '✓' : '✗'}`).join('  ·  ')}
+        <div className="m-rail m-pop" style={{ borderRadius: 40 }}>
+          <div className="m-felt relative px-5 pt-9 pb-8 text-center text-white" style={{ borderRadius: 32 }}>
+            {score === 3 && <Confetti n={40} />}
+            <div className="flex justify-center">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="m-flip grid h-[112px] w-[80px] place-items-center rounded-[11px] bg-white" style={{ ['--i' as string]: i, marginLeft: i ? -8 : 0, zIndex: i === 1 ? 2 : 1, transform: `rotate(${(i - 1) * 9}deg) translateY(${i === 1 ? -8 : 0}px)`, boxShadow: '0 10px 22px rgba(0,0,0,.4)' }}>
+                  <Seal ok={!!results[i]} size={46} />
+                </div>
+              ))}
+            </div>
+            <div className="f-display mt-8" style={{ fontSize: 38 }}>
+              {headline}
+            </div>
+            <div className="mt-2 text-[15px] font-medium text-white/75">Daily Hand No. {day}</div>
           </div>
         </div>
 
-        <div className="mt-7 flex items-stretch">
-          {fig(streak, streak === 1 ? 'day streak' : 'day streak')}
-          <div className="w-px" style={{ background: 'var(--line)' }} />
+        <div className="mt-3 flex items-stretch gap-3">
+          {fig(streak, 'day streak')}
           {fig(profile.rating.toLocaleString(), 'rating')}
-          <div className="w-px" style={{ background: 'var(--line)' }} />
-          {fig(<Countdown />, 'until the next')}
+          {fig(<Countdown />, 'next hands')}
         </div>
 
         <div className="mt-auto flex flex-col gap-3 pt-8 pb-5">
@@ -276,8 +273,8 @@ export function PracticeRun() {
       view={questionView(q, tx, real)}
       title={title}
       subtitle={q.source === 'own' ? 'From your hands' : 'Practice spot'}
-      right={<span className="f-small f-num font-bold text-white/80">{i + 1}/{queue.length}</span>}
-      progress={{ i, n: queue.length, results }}
+      right={<span className="m-pill f-num" style={{ paddingLeft: 13 }}>{i + 1}/{queue.length}</span>}
+      progress={queue.length <= 12 ? { i, n: queue.length, results } : undefined}
       onClose={() => nav(-1)}
       onAnswer={(key) => {
         const g = gradeAnswer(q, key);
@@ -313,8 +310,8 @@ function PracticeDone({ title, results, drills, onAgain }: { title: string; resu
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5">
         <div className="relative mt-14 text-center">
           {ratio >= 0.8 && <Confetti />}
-          <div className="f-ui t2">{title}</div>
-          <div className="m-pop f-hero f-num mt-2" style={{ fontSize: 88, color: ratio >= 0.8 ? 'var(--gold)' : 'var(--text)' }}>
+          <div className="f-caps">{title}</div>
+          <div className="m-pop f-hero f-num mt-3" style={{ fontSize: 96, color: ratio >= 0.8 ? 'var(--go)' : 'var(--text)' }}>
             {score}
             <span className="t3">/{results.length}</span>
           </div>
@@ -325,7 +322,7 @@ function PracticeDone({ title, results, drills, onAgain }: { title: string; resu
             const m = mastery(progress, d);
             return (
               <div key={d} className="flex items-center gap-3">
-                <DrillChip drill={d} size={36} />
+                <DrillChip drill={d} size={40} />
                 <div className="flex-1">
                   <div className="mb-1.5 flex justify-between">
                     <span className="f-ui font-semibold">{DRILL_INFO[d].title}</span>
